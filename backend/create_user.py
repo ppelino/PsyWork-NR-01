@@ -3,7 +3,8 @@ import os, json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from passlib.hash import pbkdf2_sha256
-from app import Base, Company, User, DB_URL, SessionLocal
+from backend.app import Base, Company, User, DB_URL, SessionLocal
+
 
 def create_user(email, password, company_name, cnpj, role):
     db = SessionLocal()
