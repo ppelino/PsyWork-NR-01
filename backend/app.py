@@ -9,6 +9,7 @@ from datetime import datetime
 from passlib.hash import pbkdf2_sha256
 from itsdangerous import TimestampSigner, BadSignature
 import os, secrets, json
+from register_route import router as register_router
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_URL = f"sqlite:///{os.path.join(BASE_DIR,'nr01.db')}"
@@ -82,6 +83,7 @@ seed()
 
 app = FastAPI(title="AVALIA NR01")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.include_router(register_router)
 
 FRONT = os.path.join(os.path.dirname(__file__),"../frontend")
 app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
