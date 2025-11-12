@@ -1,0 +1,42 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AVALIA NR01 — Login</title>
+<link rel="stylesheet" href="assets/branding.css">
+</head><body>
+<nav><div class="logo" style="display:flex; align-items:center;">
+    <img src="assets/datainsight.png" 
+         style="height:80px; 
+                width:auto; 
+                margin-right:12px; 
+                transform:rotate(-90deg); 
+                object-fit:contain;">
+                
+    <span style="font-size:24px; 
+                 font-weight:800; 
+                 letter-spacing:0.5px;">
+        Datainsight Consulting
+    </span>
+</div>
+
+</nav>
+<div class="container">
+  <div class="card" style="max-width:420px;margin:40px auto">
+    <h2>Acesso Empresarial</h2>
+    <p class="small">Entre com suas credenciais para acessar os relatórios da sua empresa.</p>
+    <input id="email" placeholder="seu@email.com" type="email">
+    <input id="password" placeholder="Sua senha" type="password" style="margin-top:10px">
+    <button class="btn" style="margin-top:12px" onclick="doLogin()">Entrar</button>
+    <p class="small" style="margin-top:10px">Demo: admin@demo.com / admin123</p>
+  </div>
+</div>
+<div class="footer">© 2025 AVALIA NR01 — Conformidade NR-01/NR-17 | <a href="#" onclick="localStorage.clear();alert('Sessão limpa.');">Limpar sessão</a></div>
+<script>
+async function doLogin(){
+  const res = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:email.value,password:password.value})});
+  if(!res.ok){ alert('Falha no login'); return;}
+  const data = await res.json();
+  localStorage.setItem('token', data.token);
+  location.href='dashboard.html';
+}
+</script>
+</body></html>
