@@ -1,20 +1,17 @@
-# backend/register_route.py
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from passlib.hash import pbkdf2_sha256
-from itsdangerous import TimestampSigner
-from pydantic import BaseModel
-from datetime import datetime
-from app import SessionLocal, Company, User  # importa o modelo já existente
+
+from app import SessionLocal, Company, User  # importa do app.py (mesmo pacote)
 
 router = APIRouter()
-signer = TimestampSigner("dev-secret")  # pode usar os mesmos valores do app.py
-
 
 class RegisterIn(BaseModel):
-    email: str
+    company: str
+    cnpj: str | None = None
+    email: EmailStr
     password: str
-
 
 def get_db():
     db = SessionLocal()
@@ -23,36 +20,26 @@ def get_db():
     finally:
         db.close()
 
-
-@router.post("/api/register")
-def register_user(data: RegisterIn, db: Session = Depends(get_db)):
-    # Evita duplicação de e-mail
+@router.post("/register")
+def register(data: RegisterIn, db: Session = Depends(get_db)):
+    # se já existir usuário
     if db.query(User).filter_by(email=data.email).first():
-        raise HTTPException(400, "E-mail já cadastrado.")
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
-    # Cria automaticamente a empresa demo
-    company = Company(
-        name=f"Empresa de {data.email.split('@')[0]}",
-        cnpj="00.000.000/0000-00",
-        plan="demo",
-        response_limit=10000,
-    )
-    db.add(company)
+    # cria empresa
+    comp = Company(name=data.company, cnpj=data.cnpj or "", plan="demo", response_limit=10000)
+    db.add(comp)
     db.commit()
+    db.refresh(comp)
 
-    # Cria o usuário administrador
+    # cria usuário admin
     user = User(
         email=data.email,
         pwd_hash=pbkdf2_sha256.hash(data.password),
         role="admin",
-        company_id=company.id,
+        company_id=comp.id
     )
     db.add(user)
     db.commit()
 
-    return {
-        "ok": True,
-        "message": "Cadastro realizado com sucesso! Agora você já pode fazer login.",
-        "company": company.name,
-        "email": user.email,
-    }
+    return {"ok": True, "company_id": comp.id, "email": user.email}
