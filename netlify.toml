@@ -1,0 +1,21 @@
+# netlify.toml
+
+[build]
+  command = ""            # não tem build
+  publish = "frontend"    # pasta que será publicada
+
+# Proxy: tudo que vier como /api/... vai para o backend no Render
+[[redirects]]
+  from = "/api/*"
+  to = "https://psywork-nr01-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Cabeçalhos de segurança básicos (opcional)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
+    Cache-Control = "public, max-age=0, must-revalidate"
