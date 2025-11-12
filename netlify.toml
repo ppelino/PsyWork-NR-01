@@ -1,17 +1,25 @@
 # netlify.toml
+# Configuração para o deploy do frontend no Netlify
+# com redirecionamento automático para o backend no Render.
 
 [build]
-  command = ""            # não tem build
-  publish = "frontend"    # pasta que será publicada
+  command = ""             # não há comando de build
+  publish = "frontend"     # pasta que será publicada
 
-# Proxy: tudo que vier como /api/... vai para o backend no Render
+# Proxy: tudo que vier como /api/... vai para o backend hospedado no Render
 [[redirects]]
   from = "/api/*"
   to = "https://psywork-nr01-api.onrender.com/api/:splat"
   status = 200
   force = true
 
-# Cabeçalhos de segurança básicos (opcional)
+# SPA fallback: garante que rotas internas (como /dashboard.html) funcionem
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cabeçalhos de segurança básicos (opcional, mas recomendado)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -19,3 +27,5 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "same-origin"
     Cache-Control = "public, max-age=0, must-revalidate"
+
+
