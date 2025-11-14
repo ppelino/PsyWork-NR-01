@@ -6,6 +6,7 @@ from app import SessionLocal, Company, User
 
 router = APIRouter()
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -13,28 +14,37 @@ def get_db():
     finally:
         db.close()
 
+
 @router.post("/register")
 def register_company(data: dict, db: Session = Depends(get_db)):
+    """
+    Rota pública de cadastro de empresa + usuário admin inicial.
+    É chamada pela tela de 'Cadastre-se'.
+    """
     name = data.get("name")
     cnpj = data.get("cnpj")
     email = data.get("email")
     password = data.get("password")
 
     if not all([name, email, password]):
-        raise HTTPException(400, "Dados incompletos")
+        raise HTTPException(status_code=400, detail="Dados incompletos")
 
+    # Evita criar usuário duplicado
     if db.query(User).filter_by(email=email).first():
-        raise HTTPException(400, "Usuário já existe")
+        raise HTTPException(status_code=400, detail="Usuário já existe")
 
+    # Cria empresa
     company = Company(name=name, cnpj=cnpj)
     db.add(company)
     db.commit()
+    db.refresh(company)
 
+    # Cria usuário admin vinculado à nova empresa
     user = User(
         email=email,
         pwd_hash=pbkdf2_sha256.hash(password),
         role="admin",
-        company_id=company.id
+        company_id=company.id,
     )
     db.add(user)
     db.commit()
