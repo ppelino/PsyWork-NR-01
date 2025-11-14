@@ -1,28 +1,30 @@
 # netlify.toml
-# Configuração para o deploy do frontend no Netlify
-# com redirecionamento automático para o backend no Render.
-
-# netlify.toml
 
 [build]
-  command = ""            # não tem build
-  publish = "frontend"    # pasta publicada
+  command = ""          # sem build, só HTML estático
+  publish = "frontend"  # pasta do frontend
 
+# Proxy: tudo que vier como /api/... vai para o backend no Render
 [[redirects]]
   from = "/api/*"
-  to = "https://<//psywork-nr01-api.onrender.com>/api/:splat"
+  to   = "https://psywork-nr01-api.onrender.com/api/:splat"
   status = 200
-  force = true
+  force  = true
 
-# (opcional) cabeçalhos básicos
+# SPA fallback: garante que rotas internas funcionem
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+
+# Cabeçalhos básicos
 [[headers]]
   for = "/*"
   [headers.values]
-  X-Frame-Options = "SAMEORIGIN"
-  X-Content-Type-Options = "nosniff"
-  Referrer-Policy = "same-origin"
-  Cache-Control = "public, max-age=0, must-revalidate"
-
+    X-Frame-Options       = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy       = "same-origin"
+    Cache-Control         = "public, max-age=0, must-revalidate"
 
 
 
