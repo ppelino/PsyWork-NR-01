@@ -12,8 +12,17 @@ import os, secrets, json
 
 # === Base de dados ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_URL = f"sqlite:///{os.path.join(BASE_DIR,'nr01.db')}"
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
+
+# Usa DATABASE_URL (Render/Postgres) se existir; caso contrário, sqlite local
+DB_URL = os.getenv("DATABASE_URL")
+if DB_URL:
+    # Ajuste comum no Render: postgres:// -> postgresql://
+    if DB_URL.startswith("postgres://"):
+        DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+else:
+    DB_URL = f"sqlite:///{os.path.join(BASE_DIR, 'nr01.db')}"
+
+engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
@@ -29,6 +38,7 @@ class Company(Base):
     plan = Column(String, default="demo")
     response_limit = Column(Integer, default=10000)
 
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
@@ -37,6 +47,7 @@ class User(Base):
     role = Column(String, default="admin")
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
     company = relationship("Company")
+
 
 class Campaign(Base):
     __tablename__ = "campaigns"
@@ -49,11 +60,13 @@ class Campaign(Base):
     active = Column(Boolean, default=True)
     meta = Column(Text, default="{}")
 
+
 class Question(Base):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
     dimension = Column(String, nullable=False)
     text = Column(String, nullable=False)
+
 
 class Response(Base):
     __tablename__ = "responses"
@@ -108,18 +121,19 @@ app = FastAPI(title="AVALIA NR01")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # em produção você pode restringir para o domínio do Netlify
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === Importa e pluga as rotas de cadastro ===
+# === Importa e pluga as rotas de cadastro (registro de empresa/usuário) ===
 from register_route import router as register_router
 app.include_router(register_router, prefix="/api", tags=["public"])
 
 # === Static /frontend ===
 FRONT = os.path.join(os.path.dirname(__file__), "../frontend")
 app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
+
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -133,12 +147,13 @@ def get_db():
     finally:
         db.close()
 
+
 def auth_user(request: Request, db: Session = Depends(get_db)):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not token:
         raise HTTPException(401, "unauthorized")
     try:
-        payload = signer.unsign(token, max_age=60*60*24*7).decode()
+        payload = signer.unsign(token, max_age=60 * 60 * 24 * 7).decode()
         data = json.loads(payload)
     except BadSignature:
         raise HTTPException(401, "invalid token")
@@ -153,17 +168,20 @@ class LoginIn(BaseModel):
     email: str
     password: str
 
+
 class CompanyIn(BaseModel):
     name: str
     cnpj: str | None = None
     plan: str | None = "demo"
     response_limit: int | None = 10000
 
+
 class CampaignIn(BaseModel):
     title: str
     start_at: datetime | None = None
     end_at: datetime | None = None
     meta: dict | None = {}
+
 
 class PublicResponseIn(BaseModel):
     token: str
@@ -173,6 +191,7 @@ class PublicResponseIn(BaseModel):
     environment: str | None = None
     answers: dict
     notes: str | None = ""
+
 
 # === Healthcheck (útil no Render) ===
 @app.get("/api/health")
@@ -192,6 +211,8 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
 @app.post("/api/company")
 def update_company(data: CompanyIn, user=Depends(auth_user), db: Session = Depends(get_db)):
     comp = db.query(Company).filter_by(id=user.company_id).first()
+    if not comp:
+        raise HTTPException(404, "Empresa não encontrada")
     comp.name = data.name
     comp.cnpj = data.cnpj
     comp.plan = data.plan or comp.plan
@@ -199,11 +220,46 @@ def update_company(data: CompanyIn, user=Depends(auth_user), db: Session = Depen
     db.commit()
     return {"ok": True}
 
-# === Questões ===
+# === Questões (admin) ===
 @app.get("/api/questions")
 def get_questions(user=Depends(auth_user), db: Session = Depends(get_db)):
     qs = db.query(Question).all()
     return [{"id": q.id, "dimension": q.dimension, "text": q.text} for q in qs]
+
+# === Rotas públicas para a pesquisa (de acordo com Programa NR01 pronto) ===
+@app.get("/api/public/campaign/{token}")
+def public_campaign_info(token: str, db: Session = Depends(get_db)):
+    """
+    Retorna informações básicas da campanha para o survey público.
+    """
+    camp = db.query(Campaign).filter_by(token=token, active=True).first()
+    if not camp:
+        raise HTTPException(404, "Campanha não encontrada/ativa")
+
+    comp = db.query(Company).filter_by(id=camp.company_id).first()
+    return {
+        "title": camp.title,
+        "company": comp.name if comp else None,
+        "start_at": camp.start_at,
+        "end_at": camp.end_at,
+        "token": camp.token,
+    }
+
+
+@app.get("/api/public/questions/{token}")
+def public_questions(token: str, db: Session = Depends(get_db)):
+    """
+    Lista as questões para o formulário público validando o token da campanha.
+    """
+    camp = db.query(Campaign).filter_by(token=token, active=True).first()
+    if not camp:
+        raise HTTPException(404, "Campanha não encontrada/ativa")
+
+    qs = db.query(Question).all()
+    return [
+        {"id": q.id, "dimension": q.dimension, "text": q.text}
+        for q in qs
+    ]
 
 # === Campanhas ===
 @app.post("/api/campaigns")
@@ -220,6 +276,7 @@ def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depe
     db.add(camp)
     db.commit()
     return {"id": camp.id, "token": token}
+
 
 @app.get("/api/campaigns")
 def list_campaigns(user=Depends(auth_user), db: Session = Depends(get_db)):
@@ -289,7 +346,7 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
             "sector": it.sector, "ghe": it.ghe, "ges": it.ges, "environment": it.environment,
             **{f"Q{qid}": score for qid, score in ans.items()}
         })
-    avg = {d: (sum(v)/len(v) if v else 0) for d, v in dim_scores.items()}
+    avg = {d: (sum(v) / len(v) if v else 0) for d, v in dim_scores.items()}
 
     actions = []
     for d, score in avg.items():
@@ -325,7 +382,13 @@ def export_csv(campaign_id: int, user=Depends(auth_user), db: Session = Depends(
 
     for it in items:
         ans = _json.loads(it.answers)
-        row = {"created_at": it.created_at.isoformat(), "sector": it.sector, "ghe": it.ghe, "ges": it.ges, "environment": it.environment}
+        row = {
+            "created_at": it.created_at.isoformat(),
+            "sector": it.sector,
+            "ghe": it.ghe,
+            "ges": it.ges,
+            "environment": it.environment
+        }
         for k, v in ans.items():
             row[f"Q{int(k)}"] = v
         writer.writerow(row)
