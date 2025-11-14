@@ -27,7 +27,7 @@ async function list(){
   const tbody=document.querySelector('#tbl tbody'); tbody.innerHTML='';
   camps.forEach(c=>{
     const tr=document.createElement('tr');
-    const link = location.origin + '/frontend/survey.html?token=' + c.token;
+    const link = location.origin + '/survey.html?token=' + c.token;
     tr.innerHTML = '<td>'+c.title+'</td><td><a href="'+link+'" target="_blank">'+link+'</a></td><td>'+(c.active?'Ativa':'Inativa')+'</td>';
     tbody.appendChild(tr);
   });
