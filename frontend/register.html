@@ -23,30 +23,27 @@
     <button onclick="register()">Cadastrar</button>
     <p><a href="index.html">Voltar ao login</a></p>
   </div>
+<script>
+async function register(){
+  const body = {
+    name: document.getElementById('company').value,
+    cnpj: document.getElementById('cnpj').value,
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value
+  };
 
-  <script>
-    async function register() {
-      const data = {
-        company: document.getElementById('company').value,
-        cnpj: document.getElementById('cnpj').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
-      };
+  const res = await fetch('/api/register', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
 
-      const res = await fetch("https://psywork-nr01-api.onrender.com/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+  const data = await res.json();
+  if(!res.ok){ alert(data.detail || 'Erro ao cadastrar'); return; }
+  alert('Cadastro realizado! Faça login para continuar.');
+  location.href = 'index.html';
+}
+</script>
 
-      if (res.ok) {
-        alert("Cadastro realizado com sucesso! Faça login para continuar.");
-        window.location.href = "index.html";
-      } else {
-        const err = await res.text();
-        alert("Erro ao cadastrar: " + err);
-      }
-    }
-  </script>
 </body>
 </html>
