@@ -127,7 +127,7 @@ app.add_middleware(
 )
 
 # === Importa e pluga as rotas de cadastro (registro de empresa/usuário) ===
-from register_route import router as register_router
+from .register_route import router as register_router
 app.include_router(register_router, prefix="/api", tags=["public"])
 
 # === Static /frontend ===
