@@ -1,17 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from passlib.hash import pbkdf2_sha256
 
-from app import SessionLocal, Company, User  # importa do app.py (mesmo pacote)
+from app import SessionLocal, Company, User
 
 router = APIRouter()
-
-class RegisterIn(BaseModel):
-    company: str
-    cnpj: str | None = None
-    email: EmailStr
-    password: str
 
 def get_db():
     db = SessionLocal()
@@ -21,25 +14,29 @@ def get_db():
         db.close()
 
 @router.post("/register")
-def register(data: RegisterIn, db: Session = Depends(get_db)):
-    # se já existir usuário
-    if db.query(User).filter_by(email=data.email).first():
-        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+def register_company(data: dict, db: Session = Depends(get_db)):
+    name = data.get("name")
+    cnpj = data.get("cnpj")
+    email = data.get("email")
+    password = data.get("password")
 
-    # cria empresa
-    comp = Company(name=data.company, cnpj=data.cnpj or "", plan="demo", response_limit=10000)
-    db.add(comp)
+    if not all([name, email, password]):
+        raise HTTPException(400, "Dados incompletos")
+
+    if db.query(User).filter_by(email=email).first():
+        raise HTTPException(400, "Usuário já existe")
+
+    company = Company(name=name, cnpj=cnpj)
+    db.add(company)
     db.commit()
-    db.refresh(comp)
 
-    # cria usuário admin
     user = User(
-        email=data.email,
-        pwd_hash=pbkdf2_sha256.hash(data.password),
+        email=email,
+        pwd_hash=pbkdf2_sha256.hash(password),
         role="admin",
-        company_id=comp.id
+        company_id=company.id
     )
     db.add(user)
     db.commit()
 
-    return {"ok": True, "company_id": comp.id, "email": user.email}
+    return {"ok": True, "message": "Empresa cadastrada com sucesso"}
