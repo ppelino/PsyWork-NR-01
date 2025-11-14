@@ -10,7 +10,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://<SEU-BACKEND>/api/:splat"
+  to = "https://<//psywork-nr01-api.onrender.com>/api/:splat"
   status = 200
   force = true
 
@@ -22,6 +22,7 @@
   X-Content-Type-Options = "nosniff"
   Referrer-Policy = "same-origin"
   Cache-Control = "public, max-age=0, must-revalidate"
+
 
 
 
