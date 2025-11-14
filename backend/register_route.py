@@ -53,7 +53,6 @@ def get_db():
 def register_company(data: dict, db: Session = Depends(get_db)):
     """
     Rota pública de cadastro de empresa + usuário admin inicial.
-    É chamada pela tela de 'Cadastre-se'.
     """
     name = data.get("name")
     cnpj = data.get("cnpj")
@@ -63,17 +62,14 @@ def register_company(data: dict, db: Session = Depends(get_db)):
     if not all([name, email, password]):
         raise HTTPException(status_code=400, detail="Dados incompletos")
 
-    # Evita usuário duplicado
     if db.query(User).filter_by(email=email).first():
         raise HTTPException(status_code=400, detail="Usuário já existe")
 
-    # Cria empresa
     company = Company(name=name, cnpj=cnpj)
     db.add(company)
     db.commit()
     db.refresh(company)
 
-    # Cria usuário admin
     user = User(
         email=email,
         pwd_hash=pbkdf2_sha256.hash(password),
@@ -84,3 +80,4 @@ def register_company(data: dict, db: Session = Depends(get_db)):
     db.commit()
 
     return {"ok": True, "message": "Empresa cadastrada com sucesso"}
+
