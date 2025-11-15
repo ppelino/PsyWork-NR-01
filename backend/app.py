@@ -92,14 +92,16 @@ def seed():
             db.add(comp)
             db.commit()
 
+            # === ADMIN PROFISSIONAL PADRÃO ===
             user = User(
-                email="admin@demo.com",
-                pwd_hash=pbkdf2_sha256.hash("admin123"),
+                email="engbrazdatainsightengenharia@gmail.com",
+                pwd_hash=pbkdf2_sha256.hash("Edson_DB_1975"),
                 role="admin",
                 company_id=comp.id
             )
             db.add(user)
 
+            # Carregar perguntas
             dataset = json.loads(
                 open(os.path.join(BASE_DIR, 'questions.json'), 'r', encoding='utf-8').read()
             )
@@ -109,7 +111,6 @@ def seed():
             db.commit()
     finally:
         db.close()
-
 seed()
 
 # === App & middlewares ===
