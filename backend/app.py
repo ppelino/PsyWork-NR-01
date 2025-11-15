@@ -10,24 +10,20 @@ from passlib.hash import pbkdf2_sha256
 from itsdangerous import TimestampSigner, BadSignature
 import os, secrets, json
 
-# === Base de dados ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Usa DATABASE_URL (Render/Postgres) se existir; caso contrário, sqlite local
-DB_URL = os.getenv("DATABASE_URL")
-if DB_URL:
-    # Ajuste comum no Render: postgres:// -> postgresql://
-    if DB_URL.startswith("postgres://"):
-        DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
-else:
-    DB_URL = f"sqlite:///{os.path.join(BASE_DIR, 'nr01.db')}"
-
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
-SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
-Base = declarative_base()
 
 # === Assinatura de token ===
 signer = TimestampSigner(os.environ.get("NR01_SECRET", "dev-secret"))
+
+# === Base de dados ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Agora o banco é SEMPRE o Postgres do Supabase
+DB_URL = "postgresql://postgres:Edson_DB_1975@db.cpjjeltdrtqxldjzdnh.supabase.co:5432/postgres"
+
+# Para Postgres não precisa de connect_args especial
+engine = create_engine(DB_URL)
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+Base = declarative_base()
 
 # === Modelos ===
 class Company(Base):
