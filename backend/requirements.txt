@@ -5,7 +5,8 @@ pydantic==2.8.2
 python-multipart==0.0.9
 passlib==1.7.4
 itsdangerous==2.2.0
-psycopg[binary]==3.1.12
+psycopg[binary]==3.2.12
+
 
 
 
