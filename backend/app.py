@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # URL do Postgres no Supabase (via Pooler)
-postgresql://postgres:[YOUR_PASSWORD]@db.cpjjeltdtrtqxldjzdnh.supabase.co:5432/postgres
+DB_URL = "postgresql+psycopg://postgres:Edson_DB_2024@db.cpjjeltdrtqxl djzdnh.supabase.co:5432/postgres"
 
 engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
