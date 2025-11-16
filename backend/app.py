@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_URL = "postgresql+psycopg://postgres:Edson_DB_2024@db.cpjjeltdrtqxldjzdnh.supabase.co:5432/postgres"
 
 
+
 engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
