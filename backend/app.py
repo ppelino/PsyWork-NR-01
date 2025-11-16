@@ -18,8 +18,7 @@ signer = TimestampSigner(os.environ.get("NR01_SECRET", "dev-secret"))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Agora o banco é SEMPRE o Postgres do Supabase
-DB_URL = "postgresql+psycopg://postgres:Edson_DB_1975@db.cpjjeltdrtqxldjzdnh.supabase.co:5432/postgres"
-
+postgresql+psycopg://postgres:Edson_DB_1975@db.cpjjeltdrtqxldjzdnh.supabase.co:6543/postgres
 
 # Para Postgres não precisa de connect_args especial
 engine = create_engine(DB_URL)
