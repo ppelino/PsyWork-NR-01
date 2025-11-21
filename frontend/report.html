@@ -1,46 +1,133 @@
-<!doctype html><html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relatórios — AVALIA NR01</title>
-<link rel="stylesheet" href="assets/branding.css">
-<button id="btnExportPdf" class="btn secondary">Exportar PDF</button>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head><body>
-<nav><div class="wrap"><div class="logo"><img src="assets/logo.svg"><span>AVALIA NR01</span></div>
-<div style="margin-left:auto"><a class="btn secondary" href="dashboard.html">Dashboard</a> <a class="btn secondary" href="campaigns.html">Campanhas</a></div></div></nav>
+<!doctype html>
+<html lang="pt-BR">
+<head> 
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatórios — AVALIA NR01</title>
+  <link rel="stylesheet" href="assets/branding.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">
+      <img src="assets/logo.svg"><span>AVALIA NR01</span>
+    </div>
+    <div style="margin-left:auto">
+      <a class="btn secondary" href="dashboard.html">Dashboard</a>
+      <a class="btn secondary" href="campaigns.html">Campanhas</a>
+    </div>
+  </div>
+</nav>
+
 <div class="container">
   <div class="card">
     <h2>Relatório por Campanha</h2>
+
     <select id="campSel"></select>
-    <button class="btn" onclick="load()">Gerar</button>
-    <button class="btn secondary" onclick="downloadCSV()">Exportar CSV</button>
+
+    <!-- 🔹 barra de botões (Gerar / CSV / PDF) -->
+    <div class="toolbar" style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn" onclick="load()">Gerar</button>
+      <button class="btn secondary" onclick="downloadCSV()">Exportar CSV</button>
+      <button class="btn secondary" id="btnExportPdf">Exportar PDF</button>
+    </div>
   </div>
-  <div class="card"><canvas id="bar"></canvas></div>
-  <div class="card"><h3>Plano de Ação</h3><div id="actions"></div></div>
+
+  <div class="card">
+    <canvas id="bar"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Plano de Ação</h3>
+    <div id="actions"></div>
+  </div>
 </div>
+
 <div class="footer">© 2025 AVALIA NR01</div>
+
 <script>
-let token = localStorage.getItem('token'); if(!token) location.href='index.html';
+let token = localStorage.getItem('token');
+if (!token) location.href = 'index.html';
+
 let BAR;
-async function init(){
-  const camps = await fetch('/api/campaigns',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-  campSel.innerHTML = camps.map(c=>'<option value="'+c.id+'">'+c.title+'</option>').join('');
+
+async function init() {
+  const camps = await fetch('/api/campaigns', {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(r => r.json());
+
+  campSel.innerHTML = camps
+    .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
+    .join('');
+
+  // se quiser já carregar a primeira campanha automaticamente:
+  // if (camps.length) { campSel.value = camps[0].id; load(); }
 }
-async function load(){
+
+async function load() {
   const id = campSel.value;
-  const res = await fetch('/api/summary/'+id,{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-  const labels = Object.keys(res.average), data = Object.values(res.average);
-  if(BAR) BAR.destroy();
-  BAR = new Chart(document.getElementById('bar'),{type:'bar', data:{labels:labels, datasets:[{label:'Média (1-5)', data:data}]}});
-  actions.innerHTML = res.actions.map(a=>'<div class="card"><b>'+a.dimension+'</b> — <span class="badge">'+a.priority+'</span><br><span class="small">'+a.suggestion+'</span></div>').join('');
+  const res = await fetch('/api/summary/' + id, {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(r => r.json());
+
+  const labels = Object.keys(res.average),
+        data   = Object.values(res.average);
+
+  if (BAR) BAR.destroy();
+
+  BAR = new Chart(document.getElementById('bar'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Média (1-5)',
+        data: data
+      }]
+    }
+  });
+
+  actions.innerHTML = res.actions
+    .map(a =>
+      '<div class="card">' +
+        '<b>' + a.dimension + '</b> — ' +
+        '<span class="badge">' + a.priority + '</span><br>' +
+        '<span class="small">' + a.suggestion + '</span>' +
+      '</div>'
+    )
+    .join('');
+
   localStorage.setItem('lastCampaignId', id);
 }
-async function downloadCSV(){
+
+async function downloadCSV() {
   const id = campSel.value;
-  const data = await fetch('/api/export/'+id,{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-  const blob = new Blob([data.csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='respostas_campanha_'+id+'.csv'; a.click(); URL.revokeObjectURL(url);
+  const data = await fetch('/api/export/' + id, {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(r => r.json());
+
+  const blob = new Blob([data.csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+
+  a.href = url;
+  a.download = 'respostas_campanha_' + id + '.csv';
+  a.click();
+
+  URL.revokeObjectURL(url);
 }
+
+// 🔹 botão Exportar PDF -> usa a impressão do navegador
+const btnExportPdf = document.getElementById('btnExportPdf');
+if (btnExportPdf) {
+  btnExportPdf.addEventListener('click', () => {
+    window.print();
+  });
+}
+
 init();
 </script>
-</body></html>
+
+</body>
+</html>
