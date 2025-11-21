@@ -243,6 +243,13 @@ def get_questions(user=Depends(auth_user), db: Session = Depends(get_db)):
     qs = db.query(Question).all()
     return [{"id": q.id, "dimension": q.dimension, "text": q.text} for q in qs]
 
+from passlib.hash import pbkdf2_sha256
+
+senha = "Edso2506"
+hash_senha = pbkdf2_sha256.hash(senha)
+print(hash_senha)
+
+
 # ==========================
 # Rotas públicas — campanha
 # ==========================
