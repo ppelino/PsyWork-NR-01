@@ -107,15 +107,7 @@ def seed():
             db.add(comp)
             db.commit()
 
-            # ADMIN padrão
-            user = User(
-                email="engbrazdatainsightengenharia@gmail.com",
-                pwd_hash=pbkdf2_sha256.hash("Edson_DB_1975"),
-                role="admin",
-                company_id=comp.id
-            )
-            db.add(user)
-
+           
             # Carregar perguntas do questions.json
             dataset = json.loads(
                 open(os.path.join(BASE_DIR, 'questions.json'), 'r', encoding='utf-8').read()
