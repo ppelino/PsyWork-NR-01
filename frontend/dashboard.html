@@ -1,33 +1,43 @@
-<!doctype html><html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AVALIA NR01 — Dashboard</title>
-<link rel="stylesheet" href="assets/branding.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head><body>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AVALIA NR01 — Dashboard</title>
+  <link rel="stylesheet" href="assets/branding.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
 
 <nav>
   <div class="wrap">
     <div class="logo">
-      <img src="assets/logo.svg"><span>AVALIA NR01</span>
+      <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+      <span>AVALIA NR01</span>
     </div>
 
-    <div style="margin-left:auto">
+    <div style="margin-left:auto; display:flex; gap:8px;">
       <a class="btn secondary" href="campaigns.html">Campanhas</a>
       <a class="btn secondary" href="report.html">Relatórios</a>
-
-      <!-- 🔵 BOTÃO DE SAIR ADICIONADO AQUI -->
-      <button onclick="logout()" class="btn danger" style="margin-left:10px;">
-        Sair
-      </button>
+      <button onclick="logout()" class="btn danger">Sair</button>
     </div>
   </div>
 </nav>
 
 <div class="container">
-  <div class="card"><h2>Visão Geral</h2>
+  <div class="card">
+    <h2 style="margin-top:0; margin-bottom:4px;">Visão Geral</h2>
+    <p class="small" style="margin-top:0; margin-bottom:16px;">
+      Resumo das médias por dimensão psicossocial e sugestões de plano de ação para a campanha selecionada.
+    </p>
+
     <div class="grid">
-      <div class="col-6"><canvas id="radar"></canvas></div>
-      <div class="col-6"><div id="actions"></div></div>
+      <div class="col-6">
+        <canvas id="radar"></canvas>
+      </div>
+      <div class="col-6">
+        <div id="actions"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -35,41 +45,89 @@
 <div class="footer">© 2025 AVALIA NR01</div>
 
 <script>
-let token = localStorage.getItem('token'); 
-if(!token) location.href='index.html';
+let token = localStorage.getItem('token');
+if (!token) location.href = 'index.html';
 
-async function load(){
-  const camps = await fetch('/api/campaigns',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-  if(!camps.length){ 
-    document.getElementById('actions').innerHTML='<p class="small">Crie uma campanha em <b>Campanhas</b>.</p>'; 
+async function load() {
+  const camps = await fetch('/api/campaigns', {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(r => r.json());
+
+  const actionsContainer = document.getElementById('actions');
+
+  if (!camps.length) {
+    actionsContainer.innerHTML =
+      '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
     return;
   }
 
-  const sum = await fetch('/api/summary/'+camps[0].id,{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+  const sum = await fetch('/api/summary/' + camps[0].id, {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(r => r.json());
+
   const labels = Object.keys(sum.average);
   const data = Object.values(sum.average);
 
-  new Chart(document.getElementById('radar'),{
-    type:'radar', 
-    data:{labels:labels, datasets:[{label:'Média (1-5)', data:data}]}
+  new Chart(document.getElementById('radar'), {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Média (1-5)',
+        data: data,
+        fill: true
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: { color: '#e5e7eb' }
+        }
+      },
+      scales: {
+        r: {
+          angleLines: { color: 'rgba(148,163,184,0.35)' },
+          grid: { color: 'rgba(148,163,184,0.25)' },
+          pointLabels: { color: '#e5e7eb' },
+          ticks: { backdropColor: 'transparent', color: '#9ca3af' }
+        }
+      }
+    }
   });
 
-  const list = sum.actions
-    .map(a=>'<div class="card"><span class="badge">'+a.priority+'</span> <b>'+a.dimension+'</b><br><span class="small">'+a.suggestion+'</span></div>')
+  const list = (sum.actions || [])
+    .map(a => {
+      const pri = (a.priority || '').toLowerCase();
+      let badgeLabel = a.priority || 'Ação';
+      let badgeClass = 'badge';
+
+      if (pri === 'alta') badgeClass += ' alta';
+      if (pri === 'média' || pri === 'media') badgeClass += ' media';
+      if (pri === 'manter') badgeClass += ' manter';
+
+      return `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div style="font-weight:600;">${a.dimension}</div>
+            <span class="${badgeClass}">${badgeLabel}</span>
+          </div>
+          <p class="small" style="margin:0;">${a.suggestion}</p>
+        </div>
+      `;
+    })
     .join('');
 
-  document.getElementById('actions').innerHTML=list || '<p class="small">Sem dados ainda.</p>';
+  actionsContainer.innerHTML = list || '<p class="small">Sem dados ainda.</p>';
 }
 
 load();
 
-
-// 🔴 FUNÇÃO DE LOGOUT ADICIONADA SEM MEXER NO RESTO
 function logout() {
-  localStorage.removeItem('token');
   localStorage.clear();
   window.location.href = "index.html";
 }
 </script>
 
-</body></html>
+</body>
+</html>
+
