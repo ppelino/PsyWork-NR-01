@@ -10,29 +10,34 @@ from passlib.hash import pbkdf2_sha256
 from itsdangerous import TimestampSigner, BadSignature
 import os, secrets, json
 
-
-# === Assinatura de token ===
+# ==========================
+# Assinatura de token
+# ==========================
 signer = TimestampSigner(os.environ.get("NR01_SECRET", "dev-secret"))
 
-# === Base de dados ===
+# ==========================
+# Base de dados
+# ==========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# === Base de dados ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Em produção (Render), defina DB_URL no painel:
+# postgresql+psycopg://usuario:senha@host:porta/postgres?sslmode=require
+DB_URL = os.environ.get("DB_URL")
 
-# URL do Postgres no Supabase (via Pooler)
-DB_URL = (
-    "postgresql+psycopg://"
-    "postgres.cpjjeltdtrtqxldjzdnh:Edson_DB_2024"
-    "@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
+# Fallback para desenvolvimento local (sem Render / Supabase)
+if not DB_URL:
+    DB_URL = f"sqlite:///{os.path.join(BASE_DIR, 'nr01.db')}"
+
+engine = create_engine(
+    DB_URL,
+    pool_pre_ping=True,  # ajuda a evitar problemas de conexão "morta"
 )
-
-
-engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
-# === Modelos ===
+# ==========================
+# Modelos
+# ==========================
 class Company(Base):
     __tablename__ = "companies"
     id = Column(Integer, primary_key=True)
@@ -83,9 +88,12 @@ class Response(Base):
     answers = Column(Text)  # JSON
     notes = Column(Text, default="")
 
+# Cria as tabelas no banco (Postgres no Render, SQLite local se for o caso)
 Base.metadata.create_all(engine)
 
-# === Semente demo (opcional) ===
+# ==========================
+# Semente demo (opcional)
+# ==========================
 def seed():
     db = SessionLocal()
     try:
@@ -99,7 +107,7 @@ def seed():
             db.add(comp)
             db.commit()
 
-            # === ADMIN PROFISSIONAL PADRÃO ===
+            # ADMIN padrão
             user = User(
                 email="engbrazdatainsightengenharia@gmail.com",
                 pwd_hash=pbkdf2_sha256.hash("Edson_DB_1975"),
@@ -108,7 +116,7 @@ def seed():
             )
             db.add(user)
 
-            # Carregar perguntas
+            # Carregar perguntas do questions.json
             dataset = json.loads(
                 open(os.path.join(BASE_DIR, 'questions.json'), 'r', encoding='utf-8').read()
             )
@@ -118,23 +126,25 @@ def seed():
             db.commit()
     finally:
         db.close()
+
+# Roda a semente na inicialização
 seed()
 
-# === App & middlewares ===
+# ==========================
+# App & middlewares
+# ==========================
 app = FastAPI(title="AVALIA NR01")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # em produção você pode restringir para o domínio do Netlify
+    allow_origins=["*"],  # em produção, você pode restringir para o domínio do Netlify
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === Importa e pluga as rotas de cadastro (registro de empresa/usuário) ===
-#from .register_route import router as register_router
-#app.include_router(register_router, prefix="/api", tags=["public"])
-
-# === Static /frontend ===
+# ==========================
+# Static /frontend
+# ==========================
 FRONT = os.path.join(os.path.dirname(__file__), "../frontend")
 app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
 
@@ -143,7 +153,9 @@ app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
 def root():
     return RedirectResponse(url="/frontend/index.html")
 
-# === Dependências e auth ===
+# ==========================
+# Dependências e auth
+# ==========================
 def get_db():
     db = SessionLocal()
     try:
@@ -167,7 +179,9 @@ def auth_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(401, "not found")
     return user
 
-# === Schemas ===
+# ==========================
+# Schemas (Pydantic)
+# ==========================
 class LoginIn(BaseModel):
     email: str
     password: str
@@ -196,13 +210,16 @@ class PublicResponseIn(BaseModel):
     answers: dict
     notes: str | None = ""
 
-
-# === Healthcheck (útil no Render) ===
+# ==========================
+# Healthcheck (útil no Render)
+# ==========================
 @app.get("/api/health")
 def health():
     return {"ok": True}
 
-# === Login ===
+# ==========================
+# Login
+# ==========================
 @app.post("/api/login")
 def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.query(User).filter_by(email=data.email).first()
@@ -211,7 +228,9 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
     token = signer.sign(json.dumps({"uid": user.id, "cid": user.company_id}).encode()).decode()
     return {"token": token, "role": user.role, "company_id": user.company_id, "email": user.email}
 
-# === Empresa (update) ===
+# ==========================
+# Empresa (update)
+# ==========================
 @app.post("/api/company")
 def update_company(data: CompanyIn, user=Depends(auth_user), db: Session = Depends(get_db)):
     comp = db.query(Company).filter_by(id=user.company_id).first()
@@ -224,18 +243,19 @@ def update_company(data: CompanyIn, user=Depends(auth_user), db: Session = Depen
     db.commit()
     return {"ok": True}
 
-# === Questões (admin) ===
+# ==========================
+# Questões (admin)
+# ==========================
 @app.get("/api/questions")
 def get_questions(user=Depends(auth_user), db: Session = Depends(get_db)):
     qs = db.query(Question).all()
     return [{"id": q.id, "dimension": q.dimension, "text": q.text} for q in qs]
 
-# === Rotas públicas para a pesquisa (de acordo com Programa NR01 pronto) ===
+# ==========================
+# Rotas públicas — campanha
+# ==========================
 @app.get("/api/public/campaign/{token}")
 def public_campaign_info(token: str, db: Session = Depends(get_db)):
-    """
-    Retorna informações básicas da campanha para o survey público.
-    """
     camp = db.query(Campaign).filter_by(token=token, active=True).first()
     if not camp:
         raise HTTPException(404, "Campanha não encontrada/ativa")
@@ -252,9 +272,6 @@ def public_campaign_info(token: str, db: Session = Depends(get_db)):
 
 @app.get("/api/public/questions/{token}")
 def public_questions(token: str, db: Session = Depends(get_db)):
-    """
-    Lista as questões para o formulário público validando o token da campanha.
-    """
     camp = db.query(Campaign).filter_by(token=token, active=True).first()
     if not camp:
         raise HTTPException(404, "Campanha não encontrada/ativa")
@@ -265,7 +282,9 @@ def public_questions(token: str, db: Session = Depends(get_db)):
         for q in qs
     ]
 
-# === Campanhas ===
+# ==========================
+# Campanhas (CRUD básico)
+# ==========================
 @app.post("/api/campaigns")
 def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depends(get_db)):
     token = secrets.token_urlsafe(12)
@@ -296,7 +315,9 @@ def list_campaigns(user=Depends(auth_user), db: Session = Depends(get_db)):
         for c in camps
     ]
 
-# === Resposta pública ===
+# ==========================
+# Resposta pública
+# ==========================
 @app.post("/api/public/respond")
 def public_respond(data: PublicResponseIn, db: Session = Depends(get_db)):
     camp = db.query(Campaign).filter_by(token=data.token, active=True).first()
@@ -326,7 +347,9 @@ def public_respond(data: PublicResponseIn, db: Session = Depends(get_db)):
     db.commit()
     return {"ok": True}
 
-# === Resumo/Export ===
+# ==========================
+# Resumo / Dashboard
+# ==========================
 @app.get("/api/summary/{campaign_id}")
 def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
     camp = db.query(Campaign).filter_by(id=campaign_id, company_id=user.company_id).first()
@@ -367,6 +390,9 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
     return {"count": n, "average": avg, "actions": actions, "rows": rows,
             "campaign": {"id": camp.id, "title": camp.title, "token": camp.token}}
 
+# ==========================
+# Export CSV
+# ==========================
 @app.get("/api/export/{campaign_id}")
 def export_csv(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
     import csv, io, json as _json
@@ -398,3 +424,4 @@ def export_csv(campaign_id: int, user=Depends(auth_user), db: Session = Depends(
         writer.writerow(row)
 
     return JSONResponse({"csv": output.getvalue()})
+
