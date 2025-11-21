@@ -94,10 +94,15 @@ Base.metadata.create_all(engine)
 # ==========================
 # Semente demo (opcional)
 # ==========================
+ADMIN_EMAIL = os.environ.get("NR01_ADMIN_EMAIL")
+ADMIN_PASSWORD = os.environ.get("NR01_ADMIN_PASSWORD")
+
 def seed():
     db = SessionLocal()
     try:
-        if not db.query(Company).first():
+        # Garante que exista pelo menos 1 empresa
+        comp = db.query(Company).first()
+        if not comp:
             comp = Company(
                 name="DEMO LTDA",
                 cnpj="00.000.000/0000-00",
@@ -106,21 +111,34 @@ def seed():
             )
             db.add(comp)
             db.commit()
+            db.refresh(comp)
 
-           
-            # Carregar perguntas do questions.json
+            # Carregar perguntas do questions.json na primeira vez
             dataset = json.loads(
                 open(os.path.join(BASE_DIR, 'questions.json'), 'r', encoding='utf-8').read()
             )
             for q in dataset:
                 db.add(Question(dimension=q[0], text=q[1]))
-
             db.commit()
+
+        # Garante um usuário admin baseado nas variáveis de ambiente
+        if ADMIN_EMAIL and ADMIN_PASSWORD:
+            user = db.query(User).filter_by(email=ADMIN_EMAIL).first()
+            if not user:
+                user = User(
+                    email=ADMIN_EMAIL,
+                    pwd_hash=pbkdf2_sha256.hash(ADMIN_PASSWORD),
+                    role="admin",
+                    company_id=comp.id
+                )
+                db.add(user)
+                db.commit()
     finally:
         db.close()
 
 # Roda a semente na inicialização
 seed()
+
 
 # ==========================
 # App & middlewares
