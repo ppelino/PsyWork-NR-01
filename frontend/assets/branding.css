@@ -273,3 +273,31 @@ nav > .logo {
         align-items: flex-start;
     }
 }
+@media print {
+    nav,
+    .footer {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: 0 !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 12mm !important;
+    }
+
+    .toolbar {
+        display: none !important;
+    }
+}
+
