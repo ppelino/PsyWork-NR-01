@@ -4,243 +4,236 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Planos — AVALIA NR01</title>
+
   <link rel="stylesheet" href="assets/branding.css">
 </head>
+
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="side-logo">
-      <img src="assets/logo.svg" alt="Logo AVALIA NR01">
-      <div>
-        <strong>AVALIA NR01</strong>
-        <span>Plataforma Psicossocial</span>
-      </div>
+<aside class="sidebar" id="sidebar">
+
+  <div class="side-logo">
+    <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+
+    <div>
+      <strong>AVALIA NR01</strong>
+      <span>Plataforma Psicossocial</span>
     </div>
-
-    <a class="side-link" href="dashboard.html">Dashboard</a>
-    <a class="side-link" href="campaigns.html">Campanhas</a>
-    <a class="side-link" href="report.html">Relatórios</a>
-    <a class="side-link active" href="plans.html">Planos</a>
-    <a class="side-link" href="admin.html">Administração</a>
-    <a class="side-link" href="support.html">Suporte</a>
-    <a class="side-link" href="normas.html">Normas Técnicas</a>
-
-    <button onclick="logout()" class="btn danger side-logout">Sair</button>
-  </aside>
-
-<div class="topbar">
-  <div>
-    <h1>Planos e Assinaturas</h1>
-    <p class="small">Escolha o plano ideal para avaliações psicossociais NR01.</p>
-  </div>
-  <span class="badge">COMERCIAL</span>
-</div>
-
-<div class="module-grid">
-
-  <div class="module-card">
-    <strong>Demo</strong>
-    <span>Teste inicial da plataforma.</span>
-    <p class="small">
-      • 1 campanha demonstrativa<br>
-      • Até 20 respostas<br>
-      • Dashboard básico<br>
-      • Sem exportação premium<br>
-      • Validade curta para degustação
-    </p>
   </div>
 
-  <div class="module-card">
-    <strong>Básico</strong>
-    <span>Para pequenas empresas.</span>
-    <p class="small">
-      • Até 3 campanhas<br>
-      • Até 100 respostas<br>
-      • Gráfico radar<br>
-      • Plano de ação automático<br>
-      • Suporte básico
-    </p>
-  </div>
+  <a class="side-link" href="dashboard.html">Dashboard</a>
+  <a class="side-link" href="campaigns.html">Campanhas</a>
+  <a class="side-link" href="report.html">Relatórios</a>
+  <a class="side-link active" href="plans.html">Planos</a>
+  <a class="side-link" href="admin.html">Administração</a>
+  <a class="side-link" href="support.html">Suporte</a>
+  <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-  <div class="module-card">
-    <strong>Profissional</strong>
-    <span>Para consultorias e empresas médias.</span>
-    <p class="small">
-      • Até 10 campanhas<br>
-      • Até 500 respostas<br>
-      • Relatórios por campanha<br>
-      • Exportação CSV/PDF<br>
-      • Dashboard executivo<br>
-      • Suporte prioritário
-    </p>
-  </div>
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
 
-  <div class="module-card">
-    <strong>Premium</strong>
-    <span>Para uso recorrente e corporativo.</span>
-    <p class="small">
-      • Campanhas ampliadas<br>
-      • Maior limite de respostas<br>
-      • Relatório premium<br>
-      • Plano de ação técnico<br>
-      • Suporte de implantação<br>
-      • Personalização Datainsight
-    </p>
-  </div>
+</aside>
 
-</div>
+<main class="app-main">
 
-<div class="card">
-  <h2>Assinatura pela Hotmart</h2>
-  <p class="small">
-    Em breve este botão será conectado ao checkout oficial da Hotmart.
-    Após gerar o link de pagamento, basta substituir o <b>#</b> pelo link real.
-  </p>
+  <div class="topbar">
 
-  <a href="#" class="btn" target="_blank">
-    Assinar pela Hotmart
-  </a>
+    <div>
+      <h1>Planos e Assinaturas</h1>
 
-  <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb;">
-
-  <h3>Suporte Comercial</h3>
-  <p class="small">
-    Para implantação, dúvidas sobre planos ou suporte técnico, entre em contato.
-  </p>
-
-  <a href="https://wa.me/55SEUNUMEROAQUI" class="btn secondary" target="_blank">
-    Falar no WhatsApp
-  </a>
-</div>
-
-<div class="card">
-  <h2>Comparativo dos Planos</h2>
-
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Recurso</th>
-        <th>Demo</th>
-        <th>Básico</th>
-        <th>Profissional</th>
-        <th>Premium</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Campanhas</td>
-        <td>1</td>
-        <td>3</td>
-        <td>10</td>
-        <td>Ampliado</td>
-      </tr>
-      <tr>
-        <td>Respostas</td>
-        <td>20</td>
-        <td>100</td>
-        <td>500</td>
-        <td>Maior limite</td>
-      </tr>
-      <tr>
-        <td>Dashboard</td>
-        <td>Básico</td>
-        <td>Sim</td>
-        <td>Executivo</td>
-        <td>Premium</td>
-      </tr>
-      <tr>
-        <td>Exportação</td>
-        <td>Não</td>
-        <td>Simples</td>
-        <td>CSV/PDF</td>
-        <td>PDF Premium</td>
-      </tr>
-      <tr>
-        <td>Suporte</td>
-        <td>Limitado</td>
-        <td>Básico</td>
-        <td>Prioritário</td>
-        <td>Implantação</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="footer">© 2025 AVALIA NR01 — Planos</div>
-    <div class="topbar">
-      <div>
-        <h1>Planos e Assinaturas</h1>
-        <p class="small">Escolha o plano ideal para avaliações psicossociais NR01.</p>
-      </div>
-      <span class="badge">Comercial</span>
-    </div>
-
-    <div class="module-grid">
-      <div class="module-card">
-        <strong>Demo</strong>
-        <span>Teste com campanhas e respostas limitadas.</span>
-        <p class="small">Ideal para conhecer a plataforma.</p>
-      </div>
-
-      <div class="module-card">
-        <strong>Básico</strong>
-        <span>Para pequenas empresas ou uso inicial.</span>
-        <p class="small">Campanhas limitadas, dashboard e suporte básico.</p>
-      </div>
-
-      <div class="module-card">
-        <strong>Profissional</strong>
-        <span>Para consultorias e empresas médias.</span>
-        <p class="small">Mais campanhas, relatórios e plano de ação.</p>
-      </div>
-
-      <div class="module-card">
-        <strong>Premium</strong>
-        <span>Para uso recorrente e clientes corporativos.</span>
-        <p class="small">Relatórios premium, suporte e maior limite de respostas.</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Assinatura pela Hotmart</h2>
       <p class="small">
-        Em breve este botão será conectado ao checkout oficial da Hotmart.
+        Escolha o plano ideal para avaliações psicossociais NR01.
       </p>
-
-      <a href="#" class="btn" target="_blank">
-        Assinar pela Hotmart
-      </a>
-
-      <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb;">
-
-      <h3>Suporte Comercial</h3>
-      <p class="small">
-        Para implantação, dúvidas sobre planos ou suporte técnico, entre em contato.
-      </p>
-
-      <a href="https://wa.me/55SEUNUMEROAQUI" class="btn secondary" target="_blank">
-        Falar no WhatsApp
-      </a>
     </div>
 
-    <div class="footer">© 2025 AVALIA NR01 — Planos</div>
-  </main>
+    <span class="badge">COMERCIAL</span>
 
-  <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = "index.html";
+  </div>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-    }
+  <div class="module-grid">
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-  </script>
+    <div class="module-card">
+      <strong>Demo</strong>
+
+      <span>Teste inicial da plataforma.</span>
+
+      <p class="small">
+        • 1 campanha demonstrativa<br>
+        • Até 20 respostas<br>
+        • Dashboard básico<br>
+        • Sem exportação premium<br>
+        • Validade curta para degustação
+      </p>
+    </div>
+
+    <div class="module-card">
+      <strong>Básico</strong>
+
+      <span>Para pequenas empresas.</span>
+
+      <p class="small">
+        • Até 3 campanhas<br>
+        • Até 100 respostas<br>
+        • Gráfico radar<br>
+        • Plano de ação automático<br>
+        • Suporte básico
+      </p>
+    </div>
+
+    <div class="module-card">
+      <strong>Profissional</strong>
+
+      <span>Para consultorias e empresas médias.</span>
+
+      <p class="small">
+        • Até 10 campanhas<br>
+        • Até 500 respostas<br>
+        • Relatórios por campanha<br>
+        • Exportação CSV/PDF<br>
+        • Dashboard executivo<br>
+        • Suporte prioritário
+      </p>
+    </div>
+
+    <div class="module-card">
+      <strong>Premium</strong>
+
+      <span>Para uso recorrente e corporativo.</span>
+
+      <p class="small">
+        • Campanhas ampliadas<br>
+        • Maior limite de respostas<br>
+        • Relatório premium<br>
+        • Plano de ação técnico<br>
+        • Suporte de implantação<br>
+        • Personalização Datainsight
+      </p>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2>Assinatura pela Hotmart</h2>
+
+    <p class="small">
+      Em breve este botão será conectado ao checkout oficial da Hotmart.
+      Após gerar o link de pagamento, basta substituir o # pelo link real.
+    </p>
+
+    <a href="#" class="btn" target="_blank">
+      Assinar pela Hotmart
+    </a>
+
+    <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb;">
+
+    <h3>Suporte Comercial</h3>
+
+    <p class="small">
+      Para implantação, dúvidas sobre planos ou suporte técnico, entre em contato.
+    </p>
+
+    <a href="https://wa.me/55SEUNUMEROAQUI"
+       class="btn secondary"
+       target="_blank">
+
+      Falar no WhatsApp
+
+    </a>
+
+  </div>
+
+  <div class="card">
+
+    <h2>Comparativo dos Planos</h2>
+
+    <table class="table">
+
+      <thead>
+        <tr>
+          <th>Recurso</th>
+          <th>Demo</th>
+          <th>Básico</th>
+          <th>Profissional</th>
+          <th>Premium</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>Campanhas</td>
+          <td>1</td>
+          <td>3</td>
+          <td>10</td>
+          <td>Ampliado</td>
+        </tr>
+
+        <tr>
+          <td>Respostas</td>
+          <td>20</td>
+          <td>100</td>
+          <td>500</td>
+          <td>Maior limite</td>
+        </tr>
+
+        <tr>
+          <td>Dashboard</td>
+          <td>Básico</td>
+          <td>Sim</td>
+          <td>Executivo</td>
+          <td>Premium</td>
+        </tr>
+
+        <tr>
+          <td>Exportação</td>
+          <td>Não</td>
+          <td>Simples</td>
+          <td>CSV/PDF</td>
+          <td>PDF Premium</td>
+        </tr>
+
+        <tr>
+          <td>Suporte</td>
+          <td>Limitado</td>
+          <td>Básico</td>
+          <td>Prioritário</td>
+          <td>Implantação</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="footer">
+    © 2025 AVALIA NR01 — Planos
+  </div>
+
+</main>
+
+<script>
+
+const token = localStorage.getItem('token');
+
+if (!token) {
+  window.location.href = "index.html";
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+
+</script>
 
 </body>
 </html>
