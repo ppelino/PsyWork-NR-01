@@ -5,39 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AVALIA NR01 — Dashboard</title>
 
-  <!-- Tema claro novo -->
   <link rel="stylesheet" href="assets/branding.css">
-
-  <!-- Chart.js para o gráfico radar -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav>
-    <div class="wrap">
-      <div class="logo">
-        <img src="assets/logo.svg" alt="Logo AVALIA NR01">
-        <span>AVALIA NR01</span>
-      </div>
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-      <div style="margin-left:auto; display:flex; gap:8px;">
-        <a class="btn secondary" href="campaigns.html">Campanhas</a>
-        <a class="btn secondary" href="report.html">Relatórios</a>
-        <button onclick="logout()" class="btn danger">Sair</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="side-logo">
+      <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+      <div>
+        <strong>AVALIA NR01</strong>
+        <span>Plataforma Psicossocial</span>
       </div>
     </div>
-  </nav>
 
-  <!-- CONTEÚDO PRINCIPAL -->
-  <div class="container">
+    <a class="side-link active" href="dashboard.html">Dashboard</a>
+    <a class="side-link" href="campaigns.html">Campanhas</a>
+    <a class="side-link" href="report.html">Relatórios</a>
+    <a class="side-link" href="plans.html">Planos</a>
+    <a class="side-link" href="admin.html">Administração</a>
+    <a class="side-link" href="support.html">Suporte</a>
+    <a class="side-link" href="normas.html">Normas Técnicas</a>
+
+    <button onclick="logout()" class="btn danger side-logout">Sair</button>
+  </aside>
+
+  <main class="app-main">
+    <div class="topbar">
+      <div>
+        <h1>Dashboard Executivo</h1>
+        <p class="small">Resumo das médias por dimensão psicossocial e plano de ação sugerido.</p>
+      </div>
+      <span class="badge">MVP SaaS</span>
+    </div>
+
+    <div class="module-grid">
+      <a class="module-card" href="campaigns.html">
+        <strong>Campanhas</strong>
+        <span>Gerencie avaliações e links públicos.</span>
+      </a>
+
+      <a class="module-card" href="report.html">
+        <strong>Relatórios</strong>
+        <span>Visualize resultados e exportações.</span>
+      </a>
+
+      <a class="module-card" href="plans.html">
+        <strong>Planos</strong>
+        <span>Assinatura, suporte e Hotmart.</span>
+      </a>
+
+      <a class="module-card" href="admin.html">
+        <strong>Administração</strong>
+        <span>Clientes, usuários e vencimentos.</span>
+      </a>
+    </div>
+
     <div class="card dashboard-card">
       <h2 style="margin-top:0; margin-bottom:4px;">Visão Geral</h2>
       <p class="small" style="margin-top:0; margin-bottom:16px;">
-        Resumo das médias por dimensão psicossocial e sugestões de plano de ação para a campanha selecionada.
+        Resultado da campanha selecionada com radar psicossocial e ações recomendadas.
       </p>
 
-      <!-- LAYOUT DIVIDIDO (esquerda radar / direita plano de ação) -->
       <div class="grid">
         <div class="col-6 dashboard-left">
           <h3 class="section-title">Médias por dimensão</h3>
@@ -50,87 +81,106 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="footer">© 2025 AVALIA NR01</div>
+    <div class="footer">© 2025 AVALIA NR01 — Datainsight Consulting</div>
+  </main>
 
   <script>
     let token = localStorage.getItem('token');
     if (!token) location.href = 'index.html';
 
-    async function load() {
-      const camps = await fetch('/api/campaigns', {
-        headers: { Authorization: 'Bearer ' + token }
-      }).then(r => r.json());
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
 
+    async function load() {
       const actionsContainer = document.getElementById('actions');
 
-      if (!camps.length) {
-        actionsContainer.innerHTML =
-          '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
-        return;
-      }
+      try {
+        const camps = await fetch('/api/campaigns', {
+          headers: { Authorization: 'Bearer ' + token }
+        }).then(r => r.json());
 
-      const sum = await fetch('/api/summary/' + camps[0].id, {
-        headers: { Authorization: 'Bearer ' + token }
-      }).then(r => r.json());
+        if (!camps.length) {
+          actionsContainer.innerHTML =
+            '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
+          return;
+        }
 
-      const labels = Object.keys(sum.average);
-      const data = Object.values(sum.average);
+        const sum = await fetch('/api/summary/' + camps[0].id, {
+          headers: { Authorization: 'Bearer ' + token }
+        }).then(r => r.json());
 
-      new Chart(document.getElementById('radar'), {
-        type: 'radar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Média (1-5)',
-            data: data,
-            fill: true
-          }]
-        },
-        options: {
-          plugins: {
-            legend: {
-              labels: { color: '#0f172a' }   // texto escuro pra combinar com fundo claro
-            }
+        const labels = Object.keys(sum.average || {});
+        const data = Object.values(sum.average || {});
+
+        if (!labels.length) {
+          actionsContainer.innerHTML = '<p class="small">Ainda não há respostas para gerar gráficos.</p>';
+          return;
+        }
+
+        new Chart(document.getElementById('radar'), {
+          type: 'radar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Média (1-5)',
+              data: data,
+              fill: true
+            }]
           },
-          scales: {
-            r: {
-              angleLines: { color: 'rgba(148,163,184,0.45)' },
-              grid: { color: 'rgba(148,163,184,0.35)' },
-              pointLabels: { color: '#0f172a' },
-              ticks: {
-                backdropColor: 'transparent',
-                color: '#64748b'
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                labels: { color: '#0f172a' }
+              }
+            },
+            scales: {
+              r: {
+                suggestedMin: 1,
+                suggestedMax: 5,
+                angleLines: { color: 'rgba(148,163,184,0.45)' },
+                grid: { color: 'rgba(148,163,184,0.35)' },
+                pointLabels: { color: '#0f172a' },
+                ticks: {
+                  backdropColor: 'transparent',
+                  color: '#64748b'
+                }
               }
             }
           }
-        }
-      });
+        });
 
-      const list = (sum.actions || [])
-        .map(a => {
-          const pri = (a.priority || '').toLowerCase();
-          let badgeLabel = a.priority || 'Ação';
-          let badgeClass = 'badge';
+        const list = (sum.actions || [])
+          .map(a => {
+            const pri = (a.priority || '').toLowerCase();
+            let badgeLabel = a.priority || 'Ação';
+            let badgeClass = 'badge';
 
-          if (pri === 'alta') badgeClass += ' alta';
-          if (pri === 'média' || pri === 'media') badgeClass += ' media';
-          if (pri === 'manter') badgeClass += ' manter';
+            if (pri === 'alta') badgeClass += ' alta';
+            if (pri === 'média' || pri === 'media') badgeClass += ' media';
+            if (pri === 'manter') badgeClass += ' manter';
 
-          return `
-            <div class="card action-card">
-              <div class="action-card-header">
-                <div class="action-dimension">${a.dimension}</div>
-                <span class="${badgeClass}">${badgeLabel}</span>
+            return `
+              <div class="card action-card">
+                <div class="action-card-header">
+                  <div class="action-dimension">${a.dimension}</div>
+                  <span class="${badgeClass}">${badgeLabel}</span>
+                </div>
+                <p class="small" style="margin:0;">${a.suggestion}</p>
               </div>
-              <p class="small" style="margin:0;">${a.suggestion}</p>
-            </div>
-          `;
-        })
-        .join('');
+            `;
+          })
+          .join('');
 
-      actionsContainer.innerHTML = list || '<p class="small">Sem dados ainda.</p>';
+        actionsContainer.innerHTML = list || '<p class="small">Sem dados ainda.</p>';
+
+      } catch (error) {
+        console.error(error);
+        actionsContainer.innerHTML =
+          '<p class="small">Erro ao carregar dados. Verifique a API ou faça login novamente.</p>';
+      }
     }
 
     load();
@@ -143,4 +193,3 @@
 
 </body>
 </html>
-
