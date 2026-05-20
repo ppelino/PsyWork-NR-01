@@ -4,31 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Relatórios — AVALIA NR01</title>
+
   <link rel="stylesheet" href="assets/branding.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<nav>
-  <div class="wrap">
-    <div class="logo">
-      <img src="assets/logo.svg"><span>AVALIA NR01</span>
-    </div>
-    <div style="margin-left:auto">
-      <a class="btn secondary" href="dashboard.html">Dashboard</a>
-      <a class="btn secondary" href="campaigns.html">Campanhas</a>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-logo">
+    <img src="assets/logo.svg" alt="Logo">
+
+    <div>
+      <strong>AVALIA NR01</strong>
+      <span>Plataforma Psicossocial</span>
     </div>
   </div>
-</nav>
 
-<div class="container">
+  <a class="side-link" href="dashboard.html">Dashboard</a>
+  <a class="side-link" href="campaigns.html">Campanhas</a>
+  <a class="side-link active" href="report.html">Relatórios</a>
+  <a class="side-link" href="plans.html">Planos</a>
+  <a class="side-link" href="admin.html">Administração</a>
+  <a class="side-link" href="support.html">Suporte</a>
+  <a class="side-link" href="normas.html">Normas Técnicas</a>
+
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
+</aside>
+
+<main class="app-main">
+
+  <div class="topbar">
+    <div>
+      <h1>Relatórios</h1>
+      <p class="small">
+        Gere relatórios por campanha, exporte CSV e imprima em PDF.
+      </p>
+    </div>
+
+    <span class="badge">RELATÓRIOS</span>
+  </div>
+
   <div class="card">
     <h2>Relatório por Campanha</h2>
 
     <select id="campSel"></select>
 
-    <!-- 🔹 barra de botões (Gerar / CSV / PDF) -->
-    <div class="toolbar" style="display:flex; gap:8px; margin-top:12px;">
+    <div class="toolbar" style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
       <button class="btn" onclick="load()">Gerar</button>
       <button class="btn secondary" onclick="downloadCSV()">Exportar CSV</button>
       <button class="btn secondary" id="btnExportPdf">Exportar PDF</button>
@@ -36,6 +61,7 @@
   </div>
 
   <div class="card">
+    <h3>Gráfico por dimensão</h3>
     <canvas id="bar"></canvas>
   </div>
 
@@ -43,39 +69,66 @@
     <h3>Plano de Ação</h3>
     <div id="actions"></div>
   </div>
-</div>
 
-<div class="footer">© 2025 AVALIA NR01</div>
+  <div class="footer">© 2025 AVALIA NR01 — Relatórios</div>
+
+</main>
 
 <script>
 let token = localStorage.getItem('token');
-if (!token) location.href = 'index.html';
+
+if (!token) {
+  location.href = 'index.html';
+}
 
 let BAR;
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
 
 async function init() {
   const camps = await fetch('/api/campaigns', {
     headers: { Authorization: 'Bearer ' + token }
   }).then(r => r.json());
 
+  if (!camps.length) {
+    campSel.innerHTML = '<option>Nenhuma campanha encontrada</option>';
+    actions.innerHTML = '<p class="small">Crie uma campanha para gerar relatórios.</p>';
+    return;
+  }
+
   campSel.innerHTML = camps
     .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
     .join('');
-
-  // se quiser já carregar a primeira campanha automaticamente:
-  // if (camps.length) { campSel.value = camps[0].id; load(); }
 }
 
 async function load() {
   const id = campSel.value;
+
+  if (!id) {
+    alert('Selecione uma campanha.');
+    return;
+  }
+
   const res = await fetch('/api/summary/' + id, {
     headers: { Authorization: 'Bearer ' + token }
   }).then(r => r.json());
 
-  const labels = Object.keys(res.average),
-        data   = Object.values(res.average);
+  const labels = Object.keys(res.average || {});
+  const data   = Object.values(res.average || {});
 
   if (BAR) BAR.destroy();
+
+  if (!labels.length) {
+    actions.innerHTML = '<p class="small">Ainda não há respostas para esta campanha.</p>';
+    return;
+  }
 
   BAR = new Chart(document.getElementById('bar'), {
     type: 'bar',
@@ -85,15 +138,26 @@ async function load() {
         label: 'Média (1-5)',
         data: data
       }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          suggestedMin: 1,
+          suggestedMax: 5
+        }
+      }
     }
   });
 
-  actions.innerHTML = res.actions
+  actions.innerHTML = (res.actions || [])
     .map(a =>
-      '<div class="card">' +
-        '<b>' + a.dimension + '</b> — ' +
-        '<span class="badge">' + a.priority + '</span><br>' +
-        '<span class="small">' + a.suggestion + '</span>' +
+      '<div class="card action-card">' +
+        '<div class="action-card-header">' +
+          '<div class="action-dimension">' + a.dimension + '</div>' +
+          '<span class="badge">' + a.priority + '</span>' +
+        '</div>' +
+        '<p class="small" style="margin:0;">' + a.suggestion + '</p>' +
       '</div>'
     )
     .join('');
@@ -103,6 +167,12 @@ async function load() {
 
 async function downloadCSV() {
   const id = campSel.value;
+
+  if (!id) {
+    alert('Selecione uma campanha.');
+    return;
+  }
+
   const data = await fetch('/api/export/' + id, {
     headers: { Authorization: 'Bearer ' + token }
   }).then(r => r.json());
@@ -118,8 +188,8 @@ async function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
-// 🔹 botão Exportar PDF -> usa a impressão do navegador
 const btnExportPdf = document.getElementById('btnExportPdf');
+
 if (btnExportPdf) {
   btnExportPdf.addEventListener('click', () => {
     window.print();
