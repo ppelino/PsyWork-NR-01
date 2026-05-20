@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Normas Técnicas — AVALIA NR01</title>
+
+  <link rel="stylesheet" href="assets/branding.css">
+</head>
+<body>
+
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="side-logo">
+      <img src="assets/logo.svg" alt="Logo">
+
+      <div>
+        <strong>AVALIA NR01</strong>
+        <span>Base Técnica</span>
+      </div>
+    </div>
+
+    <a class="side-link" href="dashboard.html">Dashboard</a>
+    <a class="side-link" href="campaigns.html">Campanhas</a>
+    <a class="side-link" href="report.html">Relatórios</a>
+    <a class="side-link" href="plans.html">Planos</a>
+    <a class="side-link" href="admin.html">Administração</a>
+    <a class="side-link" href="support.html">Suporte</a>
+    <a class="side-link active" href="normas.html">Normas Técnicas</a>
+
+    <button onclick="logout()" class="btn danger side-logout">
+      Sair
+    </button>
+
+  </aside>
+
+  <main class="app-main">
+
+    <div class="topbar">
+
+      <div>
+        <h1>Normas Técnicas</h1>
+
+        <p class="small">
+          Consulta rápida sobre fatores psicossociais, NR01 e orientações técnicas.
+        </p>
+      </div>
+
+      <span class="badge">
+        NR01
+      </span>
+
+    </div>
+
+    <div class="module-grid">
+
+      <div class="module-card">
+        <strong>NR01</strong>
+
+        <span>
+          Diretrizes gerais sobre gerenciamento de riscos ocupacionais e fatores psicossociais.
+        </span>
+      </div>
+
+      <div class="module-card">
+        <strong>Fatores Psicossociais</strong>
+
+        <span>
+          Aspectos relacionados à organização do trabalho, pressão, apoio e relações interpessoais.
+        </span>
+      </div>
+
+      <div class="module-card">
+        <strong>Plano de Ação</strong>
+
+        <span>
+          Recomendações para mitigação de riscos psicossociais nas organizações.
+        </span>
+      </div>
+
+      <div class="module-card">
+        <strong>PGR e SST</strong>
+
+        <span>
+          Integração entre gestão psicossocial, ergonomia e segurança do trabalho.
+        </span>
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>NR01 — Gestão de Riscos</h2>
+
+      <p class="small">
+        A Norma Regulamentadora NR01 estabelece disposições gerais e requisitos para o gerenciamento de riscos ocupacionais nas organizações.
+      </p>
+
+      <p class="small">
+        Os fatores psicossociais estão relacionados à forma como o trabalho é organizado, às relações interpessoais e às exigências emocionais do ambiente laboral.
+      </p>
+
+      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+      <h3>Exemplos de fatores psicossociais</h3>
+
+      <ul class="small">
+
+        <li>Excesso de pressão e cobrança</li>
+
+        <li>Falta de apoio da liderança</li>
+
+        <li>Assédio moral</li>
+
+        <li>Baixa autonomia</li>
+
+        <li>Conflitos interpessoais</li>
+
+        <li>Ambiente organizacional inadequado</li>
+
+        <li>Sobrecarga emocional</li>
+
+      </ul>
+
+      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+      <h3>Objetivo da Avaliação</h3>
+
+      <p class="small">
+        A avaliação psicossocial auxilia empresas e profissionais na identificação de fatores críticos relacionados à saúde mental ocupacional, contribuindo para ações preventivas e melhoria organizacional.
+      </p>
+
+      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+      <h3>Observação Técnica</h3>
+
+      <p class="small">
+        Este sistema possui finalidade de apoio técnico e organizacional, não substituindo avaliação especializada presencial quando necessária.
+      </p>
+
+    </div>
+
+    <div class="footer">
+      © 2025 AVALIA NR01 — Normas Técnicas
+    </div>
+
+  </main>
+
+  <script>
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+  </script>
+
+</body>
+</html>
