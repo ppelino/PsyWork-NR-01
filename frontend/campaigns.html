@@ -3,7 +3,6 @@
 <head>
 
 <meta charset="utf-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Campanhas — AVALIA NR01</title>
@@ -30,17 +29,11 @@
   </div>
 
   <a class="side-link" href="dashboard.html">Dashboard</a>
-
   <a class="side-link active" href="campaigns.html">Campanhas</a>
-
   <a class="side-link" href="report.html">Relatórios</a>
-
   <a class="side-link" href="plans.html">Planos</a>
-
   <a class="side-link" href="admin.html">Administração</a>
-
   <a class="side-link" href="support.html">Suporte</a>
-
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
   <button onclick="logout()" class="btn danger side-logout">
@@ -74,21 +67,17 @@
     <div class="grid">
 
       <div class="col-6">
-
         <input
           id="title"
           placeholder="Ex.: Avaliação Psicossocial 2025"
         >
-
       </div>
 
       <div class="col-6">
-
         <input
           id="meta"
           placeholder='Metadados (JSON opcional): {"setores":["ADM","OP"],"periodo":"90d"}'
         >
-
       </div>
 
     </div>
@@ -107,21 +96,21 @@
 
     <h2>Campanhas cadastradas</h2>
 
-    <table class="table" id="tbl">
+    <div class="table-responsive">
+      <table class="table" id="tbl">
 
-      <thead>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Link público</th>
+            <th>Status</th>
+          </tr>
+        </thead>
 
-        <tr>
-          <th>Título</th>
-          <th>Link público</th>
-          <th>Status</th>
-        </tr>
+        <tbody></tbody>
 
-      </thead>
-
-      <tbody></tbody>
-
-    </table>
+      </table>
+    </div>
 
   </div>
 
@@ -132,6 +121,8 @@
 </main>
 
 <script>
+
+const API_URL = "https://psywork-nr01-api.onrender.com";
 
 let token = localStorage.getItem('token');
 
@@ -150,75 +141,116 @@ function logout() {
 
 async function list() {
 
-  const camps = await fetch('/api/campaigns', {
+  try {
 
-    headers: {
-      Authorization: 'Bearer ' + token
+    const res = await fetch(API_URL + '/api/campaigns', {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
+
+    if (!res.ok) {
+      alert('Erro ao carregar campanhas. Faça login novamente.');
+      return;
     }
 
-  }).then(r => r.json());
+    const camps = await res.json();
 
-  const tbody = document.querySelector('#tbl tbody');
+    const tbody = document.querySelector('#tbl tbody');
 
-  tbody.innerHTML = '';
+    tbody.innerHTML = '';
 
-  camps.forEach(c => {
+    if (!camps.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="3">Nenhuma campanha cadastrada ainda.</td></tr>';
+      return;
+    }
 
-    const tr = document.createElement('tr');
+    camps.forEach(c => {
 
-    const link =
-      location.origin +
-      '/survey.html?token=' +
-      c.token;
+      const tr = document.createElement('tr');
 
-    tr.innerHTML =
-      '<td>' + c.title + '</td>' +
-      '<td><a href="' + link + '" target="_blank">' + link + '</a></td>' +
-      '<td>' + (c.active ? 'Ativa' : 'Inativa') + '</td>';
+      const link =
+        location.origin +
+        '/survey.html?token=' +
+        c.token;
 
-    tbody.appendChild(tr);
+      tr.innerHTML =
+        '<td>' + c.title + '</td>' +
+        '<td><a href="' + link + '" target="_blank">' + link + '</a></td>' +
+        '<td>' + (c.active ? 'Ativa' : 'Inativa') + '</td>';
 
-  });
+      tbody.appendChild(tr);
+
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert('Erro de conexão com a API.');
+
+  }
 
 }
 
 async function createCamp() {
 
-  const payload = {
-
-    title: title.value,
-
-    meta: meta.value
-      ? JSON.parse(meta.value)
-      : {}
-
-  };
-
-  const res = await fetch('/api/campaigns', {
-
-    method: 'POST',
-
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
-    },
-
-    body: JSON.stringify(payload)
-
-  });
-
-  if (!res.ok) {
-
-    alert('Erro ao criar campanha');
-
+  if (!title.value.trim()) {
+    alert('Informe o título da campanha.');
     return;
-
   }
 
-  title.value = '';
-  meta.value = '';
+  let metaObj = {};
 
-  list();
+  if (meta.value.trim()) {
+    try {
+      metaObj = JSON.parse(meta.value);
+    } catch (e) {
+      alert('O campo Metadados precisa estar em JSON válido ou vazio.');
+      return;
+    }
+  }
+
+  const payload = {
+    title: title.value.trim(),
+    meta: metaObj
+  };
+
+  try {
+
+    const res = await fetch(API_URL + '/api/campaigns', {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error(txt);
+      alert('Erro ao criar campanha.');
+      return;
+    }
+
+    title.value = '';
+    meta.value = '';
+
+    await list();
+
+    alert('Campanha criada com sucesso.');
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert('Erro de conexão com a API.');
+
+  }
 
 }
 
