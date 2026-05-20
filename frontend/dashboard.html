@@ -8,188 +8,263 @@
   <link rel="stylesheet" href="assets/branding.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="side-logo">
-      <img src="assets/logo.svg" alt="Logo AVALIA NR01">
-      <div>
-        <strong>AVALIA NR01</strong>
-        <span>Plataforma Psicossocial</span>
-      </div>
+<aside class="sidebar" id="sidebar">
+
+  <div class="side-logo">
+    <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+
+    <div>
+      <strong>AVALIA NR01</strong>
+      <span>Plataforma Psicossocial</span>
     </div>
+  </div>
 
-    <a class="side-link active" href="dashboard.html">Dashboard</a>
-    <a class="side-link" href="campaigns.html">Campanhas</a>
-    <a class="side-link" href="report.html">Relatórios</a>
-    <a class="side-link" href="plans.html">Planos</a>
-    <a class="side-link" href="admin.html">Administração</a>
-    <a class="side-link" href="support.html">Suporte</a>
-    <a class="side-link" href="normas.html">Normas Técnicas</a>
+  <a class="side-link active" href="dashboard.html">Dashboard</a>
+  <a class="side-link" href="campaigns.html">Campanhas</a>
+  <a class="side-link" href="report.html">Relatórios</a>
+  <a class="side-link" href="plans.html">Planos</a>
+  <a class="side-link" href="admin.html">Administração</a>
+  <a class="side-link" href="support.html">Suporte</a>
+  <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-    <button onclick="logout()" class="btn danger side-logout">Sair</button>
-  </aside>
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
 
-  <main class="app-main">
-    <div class="topbar">
-      <div>
-        <h1>Dashboard Executivo</h1>
-        <p class="small">Resumo das médias por dimensão psicossocial e plano de ação sugerido.</p>
-      </div>
-      <span class="badge">MVP SaaS</span>
-    </div>
+</aside>
 
-    <div class="module-grid">
-      <a class="module-card" href="campaigns.html">
-        <strong>Campanhas</strong>
-        <span>Gerencie avaliações e links públicos.</span>
-      </a>
+<main class="app-main">
 
-      <a class="module-card" href="report.html">
-        <strong>Relatórios</strong>
-        <span>Visualize resultados e exportações.</span>
-      </a>
-
-      <a class="module-card" href="plans.html">
-        <strong>Planos</strong>
-        <span>Assinatura, suporte e Hotmart.</span>
-      </a>
-
-      <a class="module-card" href="admin.html">
-        <strong>Administração</strong>
-        <span>Clientes, usuários e vencimentos.</span>
-      </a>
-    </div>
-
-    <div class="card dashboard-card">
-      <h2 style="margin-top:0; margin-bottom:4px;">Visão Geral</h2>
-      <p class="small" style="margin-top:0; margin-bottom:16px;">
-        Resultado da campanha selecionada com radar psicossocial e ações recomendadas.
+  <div class="topbar">
+    <div>
+      <h1>Dashboard Executivo</h1>
+      <p class="small">
+        Resumo das médias por dimensão psicossocial e plano de ação sugerido.
       </p>
+    </div>
 
-      <div class="grid">
-        <div class="col-6 dashboard-left">
-          <h3 class="section-title">Médias por dimensão</h3>
+    <span class="badge">MVP SAAS</span>
+  </div>
+
+  <div class="module-grid">
+
+    <a class="module-card" href="campaigns.html">
+      <strong>Campanhas</strong>
+      <span>Gerencie avaliações e links públicos.</span>
+    </a>
+
+    <a class="module-card" href="report.html">
+      <strong>Relatórios</strong>
+      <span>Visualize resultados e exportações.</span>
+    </a>
+
+    <a class="module-card" href="plans.html">
+      <strong>Planos</strong>
+      <span>Assinatura, suporte e Hotmart.</span>
+    </a>
+
+    <a class="module-card" href="admin.html">
+      <strong>Administração</strong>
+      <span>Clientes, usuários e vencimentos.</span>
+    </a>
+
+  </div>
+
+  <div class="card dashboard-card">
+
+    <h2>Visão Geral</h2>
+
+    <p class="small" style="margin-top:0; margin-bottom:14px;">
+      Resultado da campanha selecionada com radar psicossocial e ações recomendadas.
+    </p>
+
+    <div class="grid">
+
+      <div class="dashboard-left">
+
+        <h3 class="section-title">Médias por dimensão</h3>
+
+        <div class="chart-wrap">
           <canvas id="radar"></canvas>
         </div>
 
-        <div class="col-6 dashboard-right">
-          <h3 class="section-title">Plano de ação sugerido</h3>
-          <div id="actions"></div>
-        </div>
       </div>
+
+      <div class="dashboard-right">
+
+        <h3 class="section-title">Plano de ação sugerido</h3>
+
+        <div id="actions"></div>
+
+      </div>
+
     </div>
 
-    <div class="footer">© 2025 AVALIA NR01 — Datainsight Consulting</div>
-  </main>
+  </div>
 
-  <script>
-    let token = localStorage.getItem('token');
-    if (!token) location.href = 'index.html';
+  <div class="footer">
+    © 2025 AVALIA NR01 — Datainsight Consulting
+  </div>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
+</main>
+
+<script>
+
+let token = localStorage.getItem('token');
+
+if (!token) {
+  location.href = 'index.html';
+}
+
+let RADAR;
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+
+async function load() {
+
+  const actionsContainer = document.getElementById('actions');
+
+  try {
+
+    const camps = await fetch('/api/campaigns', {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(r => r.json());
+
+    if (!camps.length) {
+      actionsContainer.innerHTML =
+        '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
+      return;
     }
 
-    async function load() {
-      const actionsContainer = document.getElementById('actions');
+    const sum = await fetch('/api/summary/' + camps[0].id, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(r => r.json());
 
-      try {
-        const camps = await fetch('/api/campaigns', {
-          headers: { Authorization: 'Bearer ' + token }
-        }).then(r => r.json());
+    const labels = Object.keys(sum.average || {});
+    const data = Object.values(sum.average || {});
 
-        if (!camps.length) {
-          actionsContainer.innerHTML =
-            '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
-          return;
-        }
+    if (!labels.length) {
+      actionsContainer.innerHTML =
+        '<p class="small">Ainda não há respostas para gerar gráficos.</p>';
+      return;
+    }
 
-        const sum = await fetch('/api/summary/' + camps[0].id, {
-          headers: { Authorization: 'Bearer ' + token }
-        }).then(r => r.json());
+    if (RADAR) {
+      RADAR.destroy();
+    }
 
-        const labels = Object.keys(sum.average || {});
-        const data = Object.values(sum.average || {});
+    RADAR = new Chart(document.getElementById('radar'), {
+      type: 'radar',
 
-        if (!labels.length) {
-          actionsContainer.innerHTML = '<p class="small">Ainda não há respostas para gerar gráficos.</p>';
-          return;
-        }
+      data: {
+        labels: labels,
 
-        new Chart(document.getElementById('radar'), {
-          type: 'radar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Média (1-5)',
-              data: data,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                labels: { color: '#0f172a' }
-              }
-            },
-            scales: {
-              r: {
-                suggestedMin: 1,
-                suggestedMax: 5,
-                angleLines: { color: 'rgba(148,163,184,0.45)' },
-                grid: { color: 'rgba(148,163,184,0.35)' },
-                pointLabels: { color: '#0f172a' },
-                ticks: {
-                  backdropColor: 'transparent',
-                  color: '#64748b'
-                }
-              }
+        datasets: [{
+          label: 'Média (1-5)',
+          data: data,
+          fill: true
+        }]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: {
+            labels: {
+              color: '#0f172a'
             }
           }
-        });
+        },
 
-        const list = (sum.actions || [])
-          .map(a => {
-            const pri = (a.priority || '').toLowerCase();
-            let badgeLabel = a.priority || 'Ação';
-            let badgeClass = 'badge';
+        scales: {
+          r: {
+            suggestedMin: 1,
+            suggestedMax: 5,
 
-            if (pri === 'alta') badgeClass += ' alta';
-            if (pri === 'média' || pri === 'media') badgeClass += ' media';
-            if (pri === 'manter') badgeClass += ' manter';
+            angleLines: {
+              color: 'rgba(148,163,184,0.45)'
+            },
 
-            return `
-              <div class="card action-card">
-                <div class="action-card-header">
-                  <div class="action-dimension">${a.dimension}</div>
-                  <span class="${badgeClass}">${badgeLabel}</span>
-                </div>
-                <p class="small" style="margin:0;">${a.suggestion}</p>
-              </div>
-            `;
-          })
-          .join('');
+            grid: {
+              color: 'rgba(148,163,184,0.35)'
+            },
 
-        actionsContainer.innerHTML = list || '<p class="small">Sem dados ainda.</p>';
+            pointLabels: {
+              color: '#0f172a'
+            },
 
-      } catch (error) {
-        console.error(error);
-        actionsContainer.innerHTML =
-          '<p class="small">Erro ao carregar dados. Verifique a API ou faça login novamente.</p>';
+            ticks: {
+              backdropColor: 'transparent',
+              color: '#64748b'
+            }
+          }
+        }
       }
-    }
+    });
 
-    load();
+    const list = (sum.actions || [])
+      .map(a => {
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-  </script>
+        const pri = (a.priority || '').toLowerCase();
+
+        let badgeLabel = a.priority || 'Ação';
+
+        let badgeClass = 'badge';
+
+        if (pri === 'alta') badgeClass += ' alta';
+
+        if (pri === 'média' || pri === 'media') badgeClass += ' media';
+
+        if (pri === 'manter') badgeClass += ' manter';
+
+        return `
+          <div class="card action-card">
+            <div class="action-card-header">
+              <div class="action-dimension">${a.dimension}</div>
+              <span class="${badgeClass}">${badgeLabel}</span>
+            </div>
+            <p class="small" style="margin:0;">${a.suggestion}</p>
+          </div>
+        `;
+
+      })
+      .join('');
+
+    actionsContainer.innerHTML =
+      list || '<p class="small">Sem dados ainda.</p>';
+
+  } catch (error) {
+
+    console.error(error);
+
+    actionsContainer.innerHTML =
+      '<p class="small">Erro ao carregar dados. Verifique a API ou faça login novamente.</p>';
+
+  }
+
+}
+
+load();
+
+</script>
 
 </body>
 </html>
