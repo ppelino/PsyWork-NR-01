@@ -441,4 +441,32 @@ def export_csv(campaign_id: int, user=Depends(auth_user), db: Session = Depends(
         writer.writerow(row)
 
     return JSONResponse({"csv": output.getvalue()})
+# ==========================
+# DELETE CAMPANHA
+# ==========================
+@app.delete("/api/campaigns/{campaign_id}")
+def delete_campaign(
+    campaign_id: int,
+    user=Depends(auth_user),
+    db: Session = Depends(get_db)
+):
 
+    camp = db.query(Campaign).filter_by(
+        id=campaign_id,
+        company_id=user.company_id
+    ).first()
+
+    if not camp:
+        raise HTTPException(404, "Campanha não encontrada")
+
+    # remove respostas ligadas
+    db.query(Response).filter_by(
+        campaign_id=camp.id
+    ).delete()
+
+    # remove campanha
+    db.delete(camp)
+
+    db.commit()
+
+    return {"ok": True}
