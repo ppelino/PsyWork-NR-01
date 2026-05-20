@@ -1,14 +1,10 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Campanhas — AVALIA NR01</title>
-
-<link rel="stylesheet" href="assets/branding.css">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campanhas — AVALIA NR01</title>
+  <link rel="stylesheet" href="assets/branding.css">
 </head>
 
 <body>
@@ -16,16 +12,12 @@
 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
 <aside class="sidebar" id="sidebar">
-
   <div class="side-logo">
-
     <img src="assets/logo.svg" alt="Logo">
-
     <div>
       <strong>AVALIA NR01</strong>
       <span>Plataforma Psicossocial</span>
     </div>
-
   </div>
 
   <a class="side-link" href="dashboard.html">Dashboard</a>
@@ -36,82 +28,55 @@
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-  <button onclick="logout()" class="btn danger side-logout">
-    Sair
-  </button>
-
+  <button onclick="logout()" class="btn danger side-logout">Sair</button>
 </aside>
 
 <main class="app-main">
 
   <div class="topbar">
-
     <div>
       <h1>Campanhas</h1>
-
       <p class="small">
-        Crie campanhas psicossociais e compartilhe links públicos de avaliação.
+        Crie campanhas psicossociais, compartilhe links públicos e gerencie avaliações.
       </p>
     </div>
-
-    <span class="badge">
-      CAMPANHAS
-    </span>
-
+    <span class="badge">CAMPANHAS</span>
   </div>
 
   <div class="card">
-
     <h2>Nova campanha</h2>
 
     <div class="grid">
-
       <div class="col-6">
-        <input
-          id="title"
-          placeholder="Ex.: Avaliação Psicossocial 2025"
-        >
+        <input id="title" placeholder="Ex.: Avaliação Psicossocial 2025">
       </div>
 
       <div class="col-6">
-        <input
-          id="meta"
-          placeholder='Metadados (JSON opcional): {"setores":["ADM","OP"],"periodo":"90d"}'
-        >
+        <input id="meta" placeholder='Metadados JSON opcional: {"setores":["ADM","OP"],"periodo":"90d"}'>
       </div>
-
     </div>
 
-    <button
-      class="btn"
-      style="margin-top:12px"
-      onclick="createCamp()"
-    >
+    <button class="btn" style="margin-top:12px" onclick="createCamp()">
       Criar Campanha
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Campanhas cadastradas</h2>
 
     <div class="table-responsive">
       <table class="table" id="tbl">
-
         <thead>
           <tr>
             <th>Título</th>
             <th>Link público</th>
             <th>Status</th>
+            <th>Ações</th>
           </tr>
         </thead>
-
         <tbody></tbody>
-
       </table>
     </div>
-
   </div>
 
   <div class="footer">
@@ -121,7 +86,6 @@
 </main>
 
 <script>
-
 const API_URL = "https://psywork-nr01-api.onrender.com";
 
 let token = localStorage.getItem('token');
@@ -140,9 +104,7 @@ function logout() {
 }
 
 async function list() {
-
   try {
-
     const res = await fetch(API_URL + '/api/campaigns', {
       headers: {
         Authorization: 'Bearer ' + token
@@ -155,19 +117,17 @@ async function list() {
     }
 
     const camps = await res.json();
-
     const tbody = document.querySelector('#tbl tbody');
 
     tbody.innerHTML = '';
 
     if (!camps.length) {
       tbody.innerHTML =
-        '<tr><td colspan="3">Nenhuma campanha cadastrada ainda.</td></tr>';
+        '<tr><td colspan="4">Nenhuma campanha cadastrada ainda.</td></tr>';
       return;
     }
 
     camps.forEach(c => {
-
       const tr = document.createElement('tr');
 
       const link =
@@ -177,25 +137,49 @@ async function list() {
 
       tr.innerHTML =
         '<td>' + c.title + '</td>' +
-        '<td><a href="' + link + '" target="_blank">' + link + '</a></td>' +
-        '<td>' + (c.active ? 'Ativa' : 'Inativa') + '</td>';
+
+        '<td>' +
+          '<a href="' + link + '" target="_blank">Abrir link</a>' +
+        '</td>' +
+
+        '<td>' +
+          (c.active
+            ? '<span class="badge manter">Ativa</span>'
+            : '<span class="badge alta">Inativa</span>') +
+        '</td>' +
+
+        '<td>' +
+          '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+
+            '<button class="btn secondary" onclick="copyLink(\'' + link + '\')">' +
+              'Copiar' +
+            '</button>' +
+
+            '<button class="btn secondary" onclick="openSurvey(\'' + link + '\')">' +
+              'Abrir' +
+            '</button>' +
+
+            '<button class="btn secondary" onclick="goReport(' + c.id + ')">' +
+              'Relatório' +
+            '</button>' +
+
+            '<button class="btn danger" onclick="deleteCamp(' + c.id + ')">' +
+              'Excluir' +
+            '</button>' +
+
+          '</div>' +
+        '</td>';
 
       tbody.appendChild(tr);
-
     });
 
   } catch (err) {
-
     console.error(err);
-
     alert('Erro de conexão com a API.');
-
   }
-
 }
 
 async function createCamp() {
-
   if (!title.value.trim()) {
     alert('Informe o título da campanha.');
     return;
@@ -218,15 +202,12 @@ async function createCamp() {
   };
 
   try {
-
     const res = await fetch(API_URL + '/api/campaigns', {
       method: 'POST',
-
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + token
       },
-
       body: JSON.stringify(payload)
     });
 
@@ -245,17 +226,55 @@ async function createCamp() {
     alert('Campanha criada com sucesso.');
 
   } catch (err) {
-
     console.error(err);
-
     alert('Erro de conexão com a API.');
-
   }
+}
 
+function copyLink(link) {
+  navigator.clipboard.writeText(link);
+  alert('Link copiado.');
+}
+
+function openSurvey(link) {
+  window.open(link, '_blank');
+}
+
+function goReport(id) {
+  localStorage.setItem('lastCampaignId', id);
+  window.location.href = 'report.html';
+}
+
+async function deleteCamp(id) {
+  const confirmar = confirm(
+    'Deseja realmente excluir esta campanha? Esta ação não poderá ser desfeita.'
+  );
+
+  if (!confirmar) return;
+
+  try {
+    const res = await fetch(API_URL + '/api/campaigns/' + id, {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
+
+    if (!res.ok) {
+      alert('Erro ao excluir campanha. Talvez o backend ainda não tenha a rota DELETE.');
+      return;
+    }
+
+    alert('Campanha excluída com sucesso.');
+    list();
+
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão ao excluir campanha.');
+  }
 }
 
 list();
-
 </script>
 
 </body>
