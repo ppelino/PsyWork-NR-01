@@ -297,20 +297,68 @@ def public_questions(token: str, db: Session = Depends(get_db)):
 # ==========================
 @app.post("/api/campaigns")
 def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depends(get_db)):
+    company = db.query(Company).filter_by(id=user.company_id).first()
+
+    if not company:
+        raise HTTPException(404, "Empresa não encontrada")
+
+    plan_limits = {
+        "demo": {
+            "campaign_limit": 1,
+            "response_limit": 20
+        },
+        "basico": {
+            "campaign_limit": 3,
+            "response_limit": 100
+        },
+        "profissional": {
+            "campaign_limit": 10,
+            "response_limit": 1000
+        },
+        "premium": {
+            "campaign_limit": None,
+            "response_limit": None
+        }
+    }
+
+    plan = (company.plan or "demo").lower()
+    limits = plan_limits.get(plan, plan_limits["demo"])
+
+    campaign_count = db.query(Campaign).filter_by(company_id=company.id).count()
+
+    if limits["campaign_limit"] is not None and campaign_count >= limits["campaign_limit"]:
+        raise HTTPException(
+            403,
+            f"Limite de campanhas atingido para o plano {company.plan}. "
+            f"Seu plano permite até {limits['campaign_limit']} campanha(s)."
+        )
+
+    if limits["response_limit"] is not None:
+        company.response_limit = limits["response_limit"]
+
     token = secrets.token_urlsafe(12)
+
     camp = Campaign(
         company_id=user.company_id,
         title=inp.title,
         token=token,
         start_at=inp.start_at or datetime.utcnow(),
         end_at=inp.end_at,
+        active=True,
         meta=json.dumps(inp.meta or {})
     )
+
     db.add(camp)
     db.commit()
-    return {"id": camp.id, "token": token}
+    db.refresh(camp)
 
-
+    return {
+        "id": camp.id,
+        "token": token,
+        "plan": company.plan,
+        "campaign_limit": limits["campaign_limit"],
+        "response_limit": limits["response_limit"]
+    }
 @app.get("/api/campaigns")
 def list_campaigns(user=Depends(auth_user), db: Session = Depends(get_db)):
     camps = (
@@ -341,8 +389,22 @@ def public_respond(data: PublicResponseIn, db: Session = Depends(get_db)):
         .filter(Campaign.company_id == comp.id)
         .count()
     )
-    if total >= (comp.response_limit or 10000):
-        raise HTTPException(403, "Limite de respostas atingido para o plano atual")
+    plan_limits = {
+    "demo": 20,
+    "basico": 100,
+    "profissional": 1000,
+    "premium": None
+}
+
+plan = (comp.plan or "demo").lower()
+limit = plan_limits.get(plan, 20)
+
+if limit is not None and total >= limit:
+    raise HTTPException(
+        403,
+        f"Limite de respostas atingido para o plano {comp.plan}. "
+        f"Seu plano permite até {limit} respostas."
+    )
 
     r = Response(
         campaign_id=camp.id,
