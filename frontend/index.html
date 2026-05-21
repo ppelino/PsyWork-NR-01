@@ -6,72 +6,119 @@
   <title>AVALIA NR01 — Login</title>
   <link rel="stylesheet" href="assets/branding.css">
 </head>
-<body>
 
-<nav>
-  <div class="logo" style="justify-content: space-between;">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <img src="assets/datainsight.jpg"
-           style="height:40px; width:auto; transform:rotate(-90deg); object-fit:contain;">
-      <span>Datainsight Consulting</span>
-    </div>
-    <span class="small" style="opacity:.75;">AVALIA NR01 · Painel Corporativo</span>
-  </div>
-</nav>
+<body class="login-page">
 
-<div class="container">
-  <div class="card auth-card auth-container">
-    <h2>Acesso Empresarial</h2>
-    <p class="small">
-      Entre com suas credenciais para acessar os relatórios e indicadores psicossociais da sua empresa.
+<div class="login-shell">
+
+  <section class="login-brand">
+    <div class="brand-badge">Datainsight Consulting</div>
+
+    <h1>AVALIA NR01</h1>
+
+    <p>
+      Plataforma corporativa para avaliação de fatores psicossociais,
+      indicadores executivos e apoio à gestão preventiva.
     </p>
 
-    <label class="small" for="email">Usuário (e-mail)</label>
+    <div class="login-highlights">
+      <span>NR01</span>
+      <span>Psicossocial</span>
+      <span>Dashboard</span>
+      <span>Relatórios</span>
+    </div>
+  </section>
+
+  <section class="login-card">
+
+    <div class="login-logo">
+      <img src="assets/logo.svg" alt="AVALIA NR01">
+    </div>
+
+    <h2>Acesso Empresarial</h2>
+
+    <p class="small">
+      Entre com suas credenciais para acessar os relatórios e indicadores da sua empresa.
+    </p>
+
+    <label class="small" for="email">Usuário / e-mail</label>
     <input id="email" placeholder="seu@email.com" type="email" autocomplete="username">
 
-    <div style="height:10px"></div>
-
-    <label class="small" for="password">Senha</label>
+    <label class="small" for="password" style="margin-top:12px; display:block;">Senha</label>
     <input id="password" placeholder="Sua senha" type="password" autocomplete="current-password">
 
-    <button class="btn" style="margin-top:16px; width:100%;" onclick="doLogin()">Entrar</button>
+    <button id="loginBtn" class="btn login-btn" onclick="doLogin()">
+      Entrar na Plataforma
+    </button>
 
-    <p class="small" style="margin-top:14px; text-align:center;">
-      Não tem conta? <a href="register.html" style="color:#7dd3fc; text-decoration:none;">Cadastre-se</a>
+    <p class="login-note">
+      Acesso restrito a usuários autorizados pela administração.
     </p>
-  </div>
+
+  </section>
+
 </div>
 
-<div class="footer">
-  © 2025 AVALIA NR01 — Conformidade NR-01/NR-17 |
-  <a href="#" onclick="localStorage.clear();alert('Sessão limpa.');" style="color:#7dd3fc;">Limpar sessão</a>
+<div class="footer login-footer">
+  © 2025 AVALIA NR01 — Datainsight Consulting
 </div>
 
 <script>
+const API_URL = "https://psywork-nr01-api.onrender.com";
+
 async function doLogin() {
   const emailEl = document.getElementById('email');
   const passEl  = document.getElementById('password');
+  const btn     = document.getElementById('loginBtn');
 
-  const res = await fetch('/api/login', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      email: emailEl.value,
-      password: passEl.value
-    })
-  });
+  const email = emailEl.value.trim();
+  const password = passEl.value.trim();
 
-  if (!res.ok) {
-    alert('Falha no login');
+  if (!email || !password) {
+    alert('Preencha e-mail e senha.');
     return;
   }
 
-  const data = await res.json();
-  localStorage.setItem('token', data.token);
-  location.href = 'dashboard.html';
+  localStorage.removeItem('token');
+
+  btn.disabled = true;
+  btn.innerText = 'Entrando...';
+
+  try {
+    const res = await fetch(API_URL + '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!res.ok) {
+      localStorage.removeItem('token');
+      alert('Falha no login. Verifique e-mail e senha.');
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.token) {
+      alert('Login retornou sem token.');
+      return;
+    }
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user_email', data.email || email);
+    localStorage.setItem('company_id', data.company_id || '');
+
+    window.location.href = 'dashboard.html';
+
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão com a API. Aguarde o Render acordar e tente novamente.');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Entrar na Plataforma';
+  }
 }
 </script>
 
 </body>
 </html>
-
