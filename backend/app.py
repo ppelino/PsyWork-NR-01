@@ -795,8 +795,6 @@ def admin_delete_company(company_id: int, user=Depends(auth_user), db: Session =
     db.commit()
 
     return {"ok": True}
-
-
 # ==========================
 # Admin - Usuários
 # ==========================
@@ -836,6 +834,27 @@ def admin_update_user_company(user_id: int, data: AdminUserCompanyUpdate, user=D
 
     target_user.company_id = data.company_id
 
+    db.commit()
+
+    return {"ok": True}
+
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    target_user = db.query(User).filter_by(id=user_id).first()
+
+    if not target_user:
+        raise HTTPException(404, "Usuário não encontrado")
+
+    if target_user.id == user.id:
+        raise HTTPException(
+            400,
+            "Você não pode excluir o próprio usuário logado"
+        )
+
+    db.delete(target_user)
     db.commit()
 
     return {"ok": True}
