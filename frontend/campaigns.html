@@ -211,12 +211,17 @@ async function createCamp() {
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error(txt);
-      alert('Erro ao criar campanha.');
-      return;
-    }
+   if (!res.ok) {
+  let msg = "Erro ao criar campanha.";
+
+  try {
+    const err = await res.json();
+    msg = err.detail || msg;
+  } catch (e) {}
+
+  alert(msg);
+  return;
+} 
 
     title.value = '';
     meta.value = '';
