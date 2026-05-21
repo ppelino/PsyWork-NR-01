@@ -144,6 +144,7 @@
           <th>Perfil</th>
           <th>Empresa Atual</th>
           <th>Associar Empresa</th>
+          <th>Ações</th>
         </tr>
       </thead>
 
@@ -368,6 +369,7 @@ async function loadUsers() {
         <td>${u.email}</td>
         <td><span class="badge">${u.role}</span></td>
         <td>${u.company_name || "Sem empresa"}</td>
+
         <td>
           <select id="user-company-${u.id}">
             ${options}
@@ -375,6 +377,12 @@ async function loadUsers() {
 
           <button class="btn" onclick="updateUserCompany(${u.id})">
             Salvar
+          </button>
+        </td>
+
+        <td>
+          <button class="btn danger" onclick="deleteUser(${u.id})">
+            Excluir
           </button>
         </td>
       </tr>
@@ -403,6 +411,27 @@ async function updateUserCompany(userId) {
   await loadUsers();
 
   alert("Usuário atualizado com sucesso.");
+}
+
+async function deleteUser(userId) {
+  if (!confirm("Tem certeza que deseja excluir este usuário?")) {
+    return;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.detail || "Erro ao excluir usuário.");
+    return;
+  }
+
+  await loadUsers();
+
+  alert("Usuário excluído com sucesso.");
 }
 
 document.getElementById("companyPlan").addEventListener("change", (e) => {
