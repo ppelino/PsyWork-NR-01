@@ -11,44 +11,78 @@ from itsdangerous import TimestampSigner, BadSignature
 import os, secrets, json
 
 # ==========================
-# Assinatura de token
+# PLANOS FIXOS
+# ==========================
+PLAN_LIMITS = {
+    "demo": {
+        "label": "Demo",
+        "campaign_limit": 1,
+        "response_limit": 20
+    },
+    "basico": {
+        "label": "Básico",
+        "campaign_limit": 3,
+        "response_limit": 100
+    },
+    "profissional": {
+        "label": "Profissional",
+        "campaign_limit": 10,
+        "response_limit": 1000
+    },
+    "premium": {
+        "label": "Premium",
+        "campaign_limit": None,
+        "response_limit": None
+    }
+}
+
+
+def normalize_plan(plan):
+    plan = (plan or "demo").lower().strip()
+    if plan not in PLAN_LIMITS:
+        return "demo"
+    return plan
+
+
+def get_plan_limits(plan):
+    return PLAN_LIMITS[normalize_plan(plan)]
+
+
+# ==========================
+# Token
 # ==========================
 signer = TimestampSigner(os.environ.get("NR01_SECRET", "dev-secret"))
 
 # ==========================
-# Base de dados
+# Banco
 # ==========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Em produção (Render), defina DB_URL no painel:
-# postgresql+psycopg://usuario:senha@host:porta/postgres?sslmode=require
 DB_URL = os.environ.get("DB_URL")
 
-# Fallback para desenvolvimento local (sem Render / Supabase)
 if not DB_URL:
     DB_URL = f"sqlite:///{os.path.join(BASE_DIR, 'nr01.db')}"
 
-engine = create_engine(
-    DB_URL,
-    pool_pre_ping=True,  # ajuda a evitar problemas de conexão "morta"
-)
+engine = create_engine(DB_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
+
 
 # ==========================
 # Modelos
 # ==========================
 class Company(Base):
     __tablename__ = "companies"
+
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     cnpj = Column(String, nullable=True)
     plan = Column(String, default="demo")
-    response_limit = Column(Integer, default=10000)
+    response_limit = Column(Integer, default=20)
 
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
     pwd_hash = Column(String, nullable=False)
@@ -59,6 +93,7 @@ class User(Base):
 
 class Campaign(Base):
     __tablename__ = "campaigns"
+
     id = Column(Integer, primary_key=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
     title = Column(String, nullable=False)
@@ -71,6 +106,7 @@ class Campaign(Base):
 
 class Question(Base):
     __tablename__ = "questions"
+
     id = Column(Integer, primary_key=True)
     dimension = Column(String, nullable=False)
     text = Column(String, nullable=False)
@@ -78,6 +114,7 @@ class Question(Base):
 
 class Response(Base):
     __tablename__ = "responses"
+
     id = Column(Integer, primary_key=True)
     campaign_id = Column(Integer, ForeignKey("campaigns.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -85,45 +122,53 @@ class Response(Base):
     ghe = Column(String, nullable=True)
     ges = Column(String, nullable=True)
     environment = Column(String, nullable=True)
-    answers = Column(Text)  # JSON
+    answers = Column(Text)
     notes = Column(Text, default="")
 
-# Cria as tabelas no banco (Postgres no Render, SQLite local se for o caso)
+
 Base.metadata.create_all(engine)
 
+
 # ==========================
-# Semente demo (opcional)
+# Seed
 # ==========================
 ADMIN_EMAIL = os.environ.get("NR01_ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("NR01_ADMIN_PASSWORD")
 
+
 def seed():
     db = SessionLocal()
+
     try:
-        # Garante que exista pelo menos 1 empresa
         comp = db.query(Company).first()
+
         if not comp:
             comp = Company(
                 name="DEMO LTDA",
                 cnpj="00.000.000/0000-00",
                 plan="demo",
-                response_limit=10000
+                response_limit=20
             )
+
             db.add(comp)
             db.commit()
             db.refresh(comp)
 
-            # Carregar perguntas do questions.json na primeira vez
-            dataset = json.loads(
-                open(os.path.join(BASE_DIR, 'questions.json'), 'r', encoding='utf-8').read()
-            )
-            for q in dataset:
-                db.add(Question(dimension=q[0], text=q[1]))
-            db.commit()
+            questions_path = os.path.join(BASE_DIR, "questions.json")
 
-        # Garante um usuário admin baseado nas variáveis de ambiente
+            if os.path.exists(questions_path):
+                dataset = json.loads(
+                    open(questions_path, "r", encoding="utf-8").read()
+                )
+
+                for q in dataset:
+                    db.add(Question(dimension=q[0], text=q[1]))
+
+                db.commit()
+
         if ADMIN_EMAIL and ADMIN_PASSWORD:
             user = db.query(User).filter_by(email=ADMIN_EMAIL).first()
+
             if not user:
                 user = User(
                     email=ADMIN_EMAIL,
@@ -131,30 +176,29 @@ def seed():
                     role="admin",
                     company_id=comp.id
                 )
+
                 db.add(user)
                 db.commit()
+
     finally:
         db.close()
 
-# Roda a semente na inicialização
+
 seed()
 
 
 # ==========================
-# App & middlewares
+# App
 # ==========================
 app = FastAPI(title="AVALIA NR01")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # em produção, você pode restringir para o domínio do Netlify
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ==========================
-# Static /frontend
-# ==========================
 FRONT = os.path.join(os.path.dirname(__file__), "../frontend")
 app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
 
@@ -163,11 +207,13 @@ app.mount("/frontend", StaticFiles(directory=FRONT), name="frontend")
 def root():
     return RedirectResponse(url="/frontend/index.html")
 
+
 # ==========================
-# Dependências e auth
+# Dependências
 # ==========================
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
     finally:
@@ -176,8 +222,10 @@ def get_db():
 
 def auth_user(request: Request, db: Session = Depends(get_db)):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
+
     if not token:
         raise HTTPException(401, "unauthorized")
+
     try:
         payload = signer.unsign(token, max_age=60 * 60 * 24 * 7).decode()
         data = json.loads(payload)
@@ -185,12 +233,22 @@ def auth_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(401, "invalid token")
 
     user = db.query(User).filter_by(id=data["uid"]).first()
+
     if not user:
         raise HTTPException(401, "not found")
+
     return user
 
+
+def require_admin(user):
+    if user.role != "admin":
+        raise HTTPException(403, "Acesso negado")
+
+    return True
+
+
 # ==========================
-# Schemas (Pydantic)
+# Schemas
 # ==========================
 class LoginIn(BaseModel):
     email: str
@@ -201,7 +259,6 @@ class CompanyIn(BaseModel):
     name: str
     cnpj: str | None = None
     plan: str | None = "demo"
-    response_limit: int | None = 10000
 
 
 class CampaignIn(BaseModel):
@@ -220,12 +277,30 @@ class PublicResponseIn(BaseModel):
     answers: dict
     notes: str | None = ""
 
+
+class AdminCompanyIn(BaseModel):
+    name: str
+    cnpj: str | None = None
+    plan: str | None = "demo"
+
+
+class AdminCompanyUpdate(BaseModel):
+    name: str | None = None
+    cnpj: str | None = None
+    plan: str | None = None
+
+
+class AdminUserCompanyUpdate(BaseModel):
+    company_id: int
+
+
 # ==========================
-# Healthcheck (útil no Render)
+# Health
 # ==========================
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
 # ==========================
 # Login
@@ -233,44 +308,79 @@ def health():
 @app.post("/api/login")
 def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.query(User).filter_by(email=data.email).first()
+
     if not user or not pbkdf2_sha256.verify(data.password, user.pwd_hash):
         raise HTTPException(401, "Credenciais inválidas")
-    token = signer.sign(json.dumps({"uid": user.id, "cid": user.company_id}).encode()).decode()
-    return {"token": token, "role": user.role, "company_id": user.company_id, "email": user.email}
+
+    token = signer.sign(
+        json.dumps(
+            {
+                "uid": user.id,
+                "cid": user.company_id
+            }
+        ).encode()
+    ).decode()
+
+    return {
+        "token": token,
+        "role": user.role,
+        "company_id": user.company_id,
+        "email": user.email
+    }
+
 
 # ==========================
-# Empresa (update)
+# Empresa do usuário
 # ==========================
 @app.post("/api/company")
 def update_company(data: CompanyIn, user=Depends(auth_user), db: Session = Depends(get_db)):
     comp = db.query(Company).filter_by(id=user.company_id).first()
+
     if not comp:
         raise HTTPException(404, "Empresa não encontrada")
+
+    plan = normalize_plan(data.plan)
+    limits = get_plan_limits(plan)
+
     comp.name = data.name
     comp.cnpj = data.cnpj
-    comp.plan = data.plan or comp.plan
-    comp.response_limit = data.response_limit or comp.response_limit
+    comp.plan = plan
+    comp.response_limit = limits["response_limit"] if limits["response_limit"] is not None else 999999999
+
     db.commit()
+
     return {"ok": True}
 
+
 # ==========================
-# Questões (admin)
+# Questões
 # ==========================
 @app.get("/api/questions")
 def get_questions(user=Depends(auth_user), db: Session = Depends(get_db)):
     qs = db.query(Question).all()
-    return [{"id": q.id, "dimension": q.dimension, "text": q.text} for q in qs]
+
+    return [
+        {
+            "id": q.id,
+            "dimension": q.dimension,
+            "text": q.text
+        }
+        for q in qs
+    ]
+
 
 # ==========================
-# Rotas públicas — campanha
+# Campanha pública
 # ==========================
 @app.get("/api/public/campaign/{token}")
 def public_campaign_info(token: str, db: Session = Depends(get_db)):
     camp = db.query(Campaign).filter_by(token=token, active=True).first()
+
     if not camp:
         raise HTTPException(404, "Campanha não encontrada/ativa")
 
     comp = db.query(Company).filter_by(id=camp.company_id).first()
+
     return {
         "title": camp.title,
         "company": comp.name if comp else None,
@@ -283,17 +393,24 @@ def public_campaign_info(token: str, db: Session = Depends(get_db)):
 @app.get("/api/public/questions/{token}")
 def public_questions(token: str, db: Session = Depends(get_db)):
     camp = db.query(Campaign).filter_by(token=token, active=True).first()
+
     if not camp:
         raise HTTPException(404, "Campanha não encontrada/ativa")
 
     qs = db.query(Question).all()
+
     return [
-        {"id": q.id, "dimension": q.dimension, "text": q.text}
+        {
+            "id": q.id,
+            "dimension": q.dimension,
+            "text": q.text
+        }
         for q in qs
     ]
 
+
 # ==========================
-# Campanhas (CRUD básico)
+# Campanhas
 # ==========================
 @app.post("/api/campaigns")
 def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depends(get_db)):
@@ -302,86 +419,20 @@ def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depe
     if not company:
         raise HTTPException(404, "Empresa não encontrada")
 
-    plan_limits = {
-        "demo": {"campaign_limit": 1, "response_limit": 20},
-        "basico": {"campaign_limit": 3, "response_limit": 100},
-        "profissional": {"campaign_limit": 10, "response_limit": 1000},
-        "premium": {"campaign_limit": None, "response_limit": None},
-    }
-
-    plan = (company.plan or "demo").lower()
-    limits = plan_limits.get(plan, plan_limits["demo"])
+    plan = normalize_plan(company.plan)
+    limits = get_plan_limits(plan)
 
     total_campaigns = db.query(Campaign).filter_by(company_id=company.id).count()
 
     if limits["campaign_limit"] is not None and total_campaigns >= limits["campaign_limit"]:
         raise HTTPException(
             403,
-            f"Limite de campanhas atingido para o plano {company.plan}. "
+            f"Limite de campanhas atingido para o plano {limits['label']}. "
             f"Este plano permite até {limits['campaign_limit']} campanha(s)."
         )
 
-    token = secrets.token_urlsafe(12)
-
-    camp = Campaign(
-        company_id=user.company_id,
-        title=inp.title,
-        token=token,
-        start_at=inp.start_at or datetime.utcnow(),
-        end_at=inp.end_at,
-        active=True,
-        meta=json.dumps(inp.meta or {})
-    )
-
-    db.add(camp)
-    db.commit()
-    db.refresh(camp)
-
-    return {
-        "id": camp.id,
-        "token": token,
-        "plan": company.plan,
-        "campaign_limit": limits["campaign_limit"],
-        "response_limit": limits["response_limit"]
-    }
-    company = db.query(Company).filter_by(id=user.company_id).first()
-
-    if not company:
-        raise HTTPException(404, "Empresa não encontrada")
-
-    plan_limits = {
-        "demo": {
-            "campaign_limit": 1,
-            "response_limit": 20
-        },
-        "basico": {
-            "campaign_limit": 3,
-            "response_limit": 100
-        },
-        "profissional": {
-            "campaign_limit": 10,
-            "response_limit": 1000
-        },
-        "premium": {
-            "campaign_limit": None,
-            "response_limit": None
-        }
-    }
-
-    plan = (company.plan or "demo").lower()
-    limits = plan_limits.get(plan, plan_limits["demo"])
-
-    campaign_count = db.query(Campaign).filter_by(company_id=company.id).count()
-
-    if limits["campaign_limit"] is not None and campaign_count >= limits["campaign_limit"]:
-        raise HTTPException(
-            403,
-            f"Limite de campanhas atingido para o plano {company.plan}. "
-            f"Seu plano permite até {limits['campaign_limit']} campanha(s)."
-        )
-
-    if limits["response_limit"] is not None:
-        company.response_limit = limits["response_limit"]
+    company.plan = plan
+    company.response_limit = limits["response_limit"] if limits["response_limit"] is not None else 999999999
 
     token = secrets.token_urlsafe(12)
 
@@ -402,10 +453,12 @@ def create_campaign(inp: CampaignIn, user=Depends(auth_user), db: Session = Depe
     return {
         "id": camp.id,
         "token": token,
-        "plan": company.plan,
+        "plan": plan,
         "campaign_limit": limits["campaign_limit"],
         "response_limit": limits["response_limit"]
     }
+
+
 @app.get("/api/campaigns")
 def list_campaigns(user=Depends(auth_user), db: Session = Depends(get_db)):
     camps = (
@@ -414,44 +467,68 @@ def list_campaigns(user=Depends(auth_user), db: Session = Depends(get_db)):
         .order_by(Campaign.id.desc())
         .all()
     )
+
     return [
-        {"id": c.id, "title": c.title, "token": c.token, "active": c.active,
-         "start_at": c.start_at, "end_at": c.end_at}
+        {
+            "id": c.id,
+            "title": c.title,
+            "token": c.token,
+            "active": c.active,
+            "start_at": c.start_at,
+            "end_at": c.end_at
+        }
         for c in camps
     ]
 
+
+@app.delete("/api/campaigns/{campaign_id}")
+def delete_campaign(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
+    camp = db.query(Campaign).filter_by(
+        id=campaign_id,
+        company_id=user.company_id
+    ).first()
+
+    if not camp:
+        raise HTTPException(404, "Campanha não encontrada")
+
+    db.query(Response).filter_by(campaign_id=camp.id).delete()
+    db.delete(camp)
+    db.commit()
+
+    return {"ok": True}
+
+
 # ==========================
-# Resposta pública
+# Resposta pública com bloqueio de plano
 # ==========================
 @app.post("/api/public/respond")
 def public_respond(data: PublicResponseIn, db: Session = Depends(get_db)):
     camp = db.query(Campaign).filter_by(token=data.token, active=True).first()
+
     if not camp:
         raise HTTPException(404, "Campanha não encontrada/ativa")
 
     comp = db.query(Company).filter_by(id=camp.company_id).first()
+
+    if not comp:
+        raise HTTPException(404, "Empresa não encontrada")
+
+    plan = normalize_plan(comp.plan)
+    limits = get_plan_limits(plan)
+
     total = (
         db.query(Response)
         .join(Campaign, Campaign.id == Response.campaign_id)
         .filter(Campaign.company_id == comp.id)
         .count()
     )
-    plan_limits = {
-    "demo": 20,
-    "basico": 100,
-    "profissional": 1000,
-    "premium": None
-}
 
-plan = (comp.plan or "demo").lower()
-limit = plan_limits.get(plan, 20)
-
-if limit is not None and total >= limit:
-    raise HTTPException(
-        403,
-        f"Limite de respostas atingido para o plano {comp.plan}. "
-        f"Seu plano permite até {limit} respostas."
-    )
+    if limits["response_limit"] is not None and total >= limits["response_limit"]:
+        raise HTTPException(
+            403,
+            f"Limite de respostas atingido para o plano {limits['label']}. "
+            f"Este plano permite até {limits['response_limit']} respostas."
+        )
 
     r = Response(
         campaign_id=camp.id,
@@ -462,96 +539,105 @@ if limit is not None and total >= limit:
         answers=json.dumps(data.answers),
         notes=data.notes or ""
     )
+
     db.add(r)
     db.commit()
+
     return {"ok": True}
 
+
 # ==========================
-# Resumo / Dashboard
+# Summary
 # ==========================
 @app.get("/api/summary/{campaign_id}")
 def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
-    camp = db.query(Campaign).filter_by(id=campaign_id, company_id=user.company_id).first()
+    camp = db.query(Campaign).filter_by(
+        id=campaign_id,
+        company_id=user.company_id
+    ).first()
+
     if not camp:
         raise HTTPException(404, "Campanha não encontrada")
 
-    qs = {q.id: (q.dimension, q.text) for q in db.query(Question).all()}
+    qs = {
+        q.id: (q.dimension, q.text)
+        for q in db.query(Question).all()
+    }
+
     items = db.query(Response).filter_by(campaign_id=camp.id).all()
 
     dim_scores = {}
     n = 0
     rows = []
+
     for it in items:
         ans = json.loads(it.answers)
         n += 1
+
         for qid, score in ans.items():
             dim = qs[int(qid)][0]
             dim_scores.setdefault(dim, []).append(float(score))
+
         rows.append({
             "created_at": it.created_at.isoformat(),
-            "sector": it.sector, "ghe": it.ghe, "ges": it.ges, "environment": it.environment,
-            **{f"Q{qid}": score for qid, score in ans.items()}
+            "sector": it.sector,
+            "ghe": it.ghe,
+            "ges": it.ges,
+            "environment": it.environment,
+            **{
+                f"Q{qid}": score
+                for qid, score in ans.items()
+            }
         })
-    avg = {d: (sum(v) / len(v) if v else 0) for d, v in dim_scores.items()}
+
+    avg = {
+        d: (sum(v) / len(v) if v else 0)
+        for d, v in dim_scores.items()
+    }
 
     actions = []
+
     for d, score in avg.items():
         if score < 2.5:
-            actions.append({"dimension": d, "priority": "Alta",
-                            "suggestion": f"Implementar medidas imediatas para {d.lower()} (treinamento, revisão de processos, reforço de recursos, mediação de conflitos)."})
+            actions.append({
+                "dimension": d,
+                "priority": "Alta",
+                "suggestion": f"Implementar medidas imediatas para {d.lower()}."
+            })
         elif score < 3.5:
-            actions.append({"dimension": d, "priority": "Média",
-                            "suggestion": f"Plano de melhoria para {d.lower()} com responsáveis e prazos; comunicar metas e acompanhar trimestralmente."})
+            actions.append({
+                "dimension": d,
+                "priority": "Média",
+                "suggestion": f"Plano de melhoria para {d.lower()} com responsáveis e prazos."
+            })
         else:
-            actions.append({"dimension": d, "priority": "Manter",
-                            "suggestion": f"Manter boas práticas em {d.lower()} e monitorar com reavaliações semestrais."})
+            actions.append({
+                "dimension": d,
+                "priority": "Manter",
+                "suggestion": f"Manter boas práticas em {d.lower()} e monitorar periodicamente."
+            })
 
-    return {"count": n, "average": avg, "actions": actions, "rows": rows,
-            "campaign": {"id": camp.id, "title": camp.title, "token": camp.token}}
+    return {
+        "count": n,
+        "average": avg,
+        "actions": actions,
+        "rows": rows,
+        "campaign": {
+            "id": camp.id,
+            "title": camp.title,
+            "token": camp.token
+        }
+    }
+
 
 # ==========================
 # Export CSV
 # ==========================
 @app.get("/api/export/{campaign_id}")
 def export_csv(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
-    import csv, io, json as _json
-    camp = db.query(Campaign).filter_by(id=campaign_id, company_id=user.company_id).first()
-    if not camp:
-        raise HTTPException(404, "Campanha não encontrada")
-    items = db.query(Response).filter_by(campaign_id=camp.id).all()
-
-    output = io.StringIO()
-    if not items:
-        return JSONResponse({"csv": ""})
-
-    first = _json.loads(items[0].answers)
-    headers = ["created_at", "sector", "ghe", "ges", "environment"] + [f"Q{k}" for k in sorted(map(int, first.keys()))]
-    writer = csv.DictWriter(output, fieldnames=headers)
-    writer.writeheader()
-
-    for it in items:
-        ans = _json.loads(it.answers)
-        row = {
-            "created_at": it.created_at.isoformat(),
-            "sector": it.sector,
-            "ghe": it.ghe,
-            "ges": it.ges,
-            "environment": it.environment
-        }
-        for k, v in ans.items():
-            row[f"Q{int(k)}"] = v
-        writer.writerow(row)
-
-    return JSONResponse({"csv": output.getvalue()})
-# ==========================
-# DELETE CAMPANHA
-# ==========================
-@app.delete("/api/campaigns/{campaign_id}")
-def delete_campaign(
-    campaign_id: int,
-    user=Depends(auth_user),
-    db: Session = Depends(get_db)
-):
+    import csv
+    import io
+    import json as _json
 
     camp = db.query(Campaign).filter_by(
         id=campaign_id,
@@ -561,46 +647,50 @@ def delete_campaign(
     if not camp:
         raise HTTPException(404, "Campanha não encontrada")
 
-    # remove respostas ligadas
-    db.query(Response).filter_by(
-        campaign_id=camp.id
-    ).delete()
+    items = db.query(Response).filter_by(campaign_id=camp.id).all()
 
-    # remove campanha
-    db.delete(camp)
+    output = io.StringIO()
 
-    db.commit()
+    if not items:
+        return JSONResponse({"csv": ""})
 
-    return {"ok": True}
+    first = _json.loads(items[0].answers)
+
+    headers = [
+        "created_at",
+        "sector",
+        "ghe",
+        "ges",
+        "environment"
+    ] + [
+        f"Q{k}"
+        for k in sorted(map(int, first.keys()))
+    ]
+
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+
+    for it in items:
+        ans = _json.loads(it.answers)
+
+        row = {
+            "created_at": it.created_at.isoformat(),
+            "sector": it.sector,
+            "ghe": it.ghe,
+            "ges": it.ges,
+            "environment": it.environment
+        }
+
+        for k, v in ans.items():
+            row[f"Q{int(k)}"] = v
+
+        writer.writerow(row)
+
+    return JSONResponse({"csv": output.getvalue()})
+
+
 # ==========================
-# ADMIN - SCHEMAS
-# ==========================
-class AdminCompanyIn(BaseModel):
-    name: str
-    cnpj: str | None = None
-    plan: str | None = "demo"
-    response_limit: int | None = 10000
-
-
-class AdminCompanyUpdate(BaseModel):
-    name: str | None = None
-    cnpj: str | None = None
-    plan: str | None = None
-    response_limit: int | None = None
-
-
-class AdminUserCompanyUpdate(BaseModel):
-    company_id: int | None = None
-
-
-def require_admin(user):
-    if user.role != "admin":
-        raise HTTPException(403, "Acesso negado")
-    return True
-
-
-# ==========================
-# ADMIN - EMPRESAS
+# Admin - Empresas
 # ==========================
 @app.get("/api/admin/companies")
 def admin_list_companies(user=Depends(auth_user), db: Session = Depends(get_db)):
@@ -608,43 +698,51 @@ def admin_list_companies(user=Depends(auth_user), db: Session = Depends(get_db))
 
     companies = db.query(Company).order_by(Company.id.desc()).all()
 
-    return [
-        {
+    result = []
+
+    for c in companies:
+        plan = normalize_plan(c.plan)
+        limits = get_plan_limits(plan)
+
+        result.append({
             "id": c.id,
             "name": c.name,
             "cnpj": c.cnpj,
-            "plan": c.plan,
-            "response_limit": c.response_limit
-        }
-        for c in companies
-    ]
+            "plan": plan,
+            "plan_label": limits["label"],
+            "campaign_limit": limits["campaign_limit"],
+            "response_limit": limits["response_limit"],
+            "current_campaigns": db.query(Campaign).filter_by(company_id=c.id).count(),
+            "current_responses": (
+                db.query(Response)
+                .join(Campaign, Campaign.id == Response.campaign_id)
+                .filter(Campaign.company_id == c.id)
+                .count()
+            )
+        })
+
+    return result
 
 
 @app.post("/api/admin/companies")
 def admin_create_company(data: AdminCompanyIn, user=Depends(auth_user), db: Session = Depends(get_db)):
     require_admin(user)
 
+    plan = normalize_plan(data.plan)
+    limits = get_plan_limits(plan)
+
     company = Company(
         name=data.name,
         cnpj=data.cnpj,
-        plan=data.plan or "demo",
-        response_limit=data.response_limit or 10000
+        plan=plan,
+        response_limit=limits["response_limit"] if limits["response_limit"] is not None else 999999999
     )
 
     db.add(company)
     db.commit()
     db.refresh(company)
 
-    return {
-        "ok": True,
-        "company": {
-            "id": company.id,
-            "name": company.name,
-            "cnpj": company.cnpj,
-            "plan": company.plan,
-            "response_limit": company.response_limit
-        }
-    }
+    return {"ok": True, "company_id": company.id}
 
 
 @app.put("/api/admin/companies/{company_id}")
@@ -663,10 +761,11 @@ def admin_update_company(company_id: int, data: AdminCompanyUpdate, user=Depends
         company.cnpj = data.cnpj
 
     if data.plan is not None:
-        company.plan = data.plan
+        plan = normalize_plan(data.plan)
+        limits = get_plan_limits(plan)
 
-    if data.response_limit is not None:
-        company.response_limit = data.response_limit
+        company.plan = plan
+        company.response_limit = limits["response_limit"] if limits["response_limit"] is not None else 999999999
 
     db.commit()
     db.refresh(company)
@@ -699,7 +798,7 @@ def admin_delete_company(company_id: int, user=Depends(auth_user), db: Session =
 
 
 # ==========================
-# ADMIN - USUÁRIOS
+# Admin - Usuários
 # ==========================
 @app.get("/api/admin/users")
 def admin_list_users(user=Depends(auth_user), db: Session = Depends(get_db)):
@@ -730,15 +829,13 @@ def admin_update_user_company(user_id: int, data: AdminUserCompanyUpdate, user=D
     if not target_user:
         raise HTTPException(404, "Usuário não encontrado")
 
-    if data.company_id is not None:
-        company = db.query(Company).filter_by(id=data.company_id).first()
+    company = db.query(Company).filter_by(id=data.company_id).first()
 
-        if not company:
-            raise HTTPException(404, "Empresa não encontrada")
+    if not company:
+        raise HTTPException(404, "Empresa não encontrada")
 
     target_user.company_id = data.company_id
 
     db.commit()
 
     return {"ok": True}
-
