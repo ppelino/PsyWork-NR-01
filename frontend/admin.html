@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administração — AVALIA NR01</title>
-
   <link rel="stylesheet" href="assets/branding.css">
 </head>
 
@@ -16,7 +15,6 @@
 
   <div class="side-logo">
     <img src="assets/logo.svg" alt="Logo AVALIA NR01">
-
     <div>
       <strong>AVALIA NR01</strong>
       <span>Plataforma Psicossocial</span>
@@ -31,9 +29,7 @@
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-  <button onclick="logout()" class="btn danger side-logout">
-    Sair
-  </button>
+  <button onclick="logout()" class="btn danger side-logout">Sair</button>
 
 </aside>
 
@@ -42,226 +38,114 @@
   <div class="topbar">
     <div>
       <h1>Administração</h1>
-      <p class="small">
-        Painel administrativo para gestão de clientes, usuários, planos e vencimentos.
-      </p>
+      <p class="small">Gestão real de empresas, usuários, planos e limites de respostas.</p>
     </div>
-
     <span class="badge">ADMIN</span>
   </div>
 
   <div class="module-grid">
-
     <div class="module-card">
-      <strong>Clientes</strong>
-      <span>Empresas cadastradas na plataforma.</span>
-      <p class="small">
-        Total previsto: controle por empresa, status e plano contratado.
-      </p>
+      <strong id="totalCompanies">0</strong>
+      <span>Empresas cadastradas</span>
     </div>
 
     <div class="module-card">
-      <strong>Usuários</strong>
-      <span>Gestores, clientes e acessos demo.</span>
-      <p class="small">
-        Controle de login, permissões e vínculo com empresas.
-      </p>
+      <strong id="totalUsers">0</strong>
+      <span>Usuários cadastrados</span>
     </div>
 
     <div class="module-card">
-      <strong>Vencimentos</strong>
-      <span>Controle de validade dos acessos.</span>
-      <p class="small">
-        Bloqueio automático futuro por data de expiração.
-      </p>
+      <strong>Multiempresa</strong>
+      <span>Separação por company_id</span>
     </div>
 
     <div class="module-card">
-      <strong>Limites</strong>
-      <span>Campanhas, respostas e links por plano.</span>
-      <p class="small">
-        Base para planos Demo, Básico, Profissional e Premium.
-      </p>
+      <strong>SaaS</strong>
+      <span>Planos e limites ativos</span>
     </div>
-
   </div>
 
   <div class="card">
-
-    <h2>Cadastro de Cliente</h2>
-
-    <p class="small">
-      Área preparada para futura integração com banco de dados.
-      Por enquanto, serve como painel visual de organização comercial.
-    </p>
+    <h2>Cadastrar Empresa</h2>
 
     <div class="grid">
-
       <div class="col-6">
         <label class="small">Nome da empresa</label>
-        <input placeholder="Ex.: Metalúrgica Alfa Ltda">
+        <input id="companyName" placeholder="Ex.: Metalúrgica Alfa Ltda">
       </div>
 
       <div class="col-6">
-        <label class="small">Responsável</label>
-        <input placeholder="Ex.: João Silva">
-      </div>
-
-      <div class="col-6">
-        <label class="small">E-mail do usuário</label>
-        <input placeholder="cliente@email.com">
+        <label class="small">CNPJ</label>
+        <input id="companyCnpj" placeholder="00.000.000/0000-00">
       </div>
 
       <div class="col-6">
         <label class="small">Plano</label>
-        <select>
-          <option>Demo</option>
-          <option>Básico</option>
-          <option>Profissional</option>
-          <option>Premium</option>
+        <select id="companyPlan">
+          <option value="demo">Demo</option>
+          <option value="basico">Básico</option>
+          <option value="profissional">Profissional</option>
+          <option value="premium">Premium</option>
         </select>
       </div>
 
       <div class="col-6">
-        <label class="small">Data de vencimento</label>
-        <input type="date">
+        <label class="small">Limite de respostas</label>
+        <input id="companyLimit" type="number" value="10000">
       </div>
-
-      <div class="col-6">
-        <label class="small">Status</label>
-        <select>
-          <option>Ativo</option>
-          <option>Inativo</option>
-          <option>Teste</option>
-          <option>Vencido</option>
-        </select>
-      </div>
-
     </div>
 
-    <button class="btn" style="margin-top:16px;" onclick="alert('Cadastro visual preparado. Integração com banco será feita na próxima fase.')">
-      Salvar Cliente
+    <button class="btn" style="margin-top:16px;" onclick="createCompany()">
+      Salvar Empresa
     </button>
-
   </div>
 
   <div class="card">
-
-    <h2>Clientes Demonstrativos</h2>
+    <h2>Empresas Cadastradas</h2>
 
     <table class="table">
-
       <thead>
         <tr>
+          <th>ID</th>
           <th>Empresa</th>
+          <th>CNPJ</th>
           <th>Plano</th>
-          <th>Status</th>
-          <th>Campanhas</th>
-          <th>Respostas</th>
-          <th>Vencimento</th>
+          <th>Limite</th>
+          <th>Ações</th>
         </tr>
       </thead>
-
-      <tbody>
-        <tr>
-          <td>Demo Datainsight</td>
-          <td>Demo</td>
-          <td><span class="badge media">Teste</span></td>
-          <td>1 / 1</td>
-          <td>20 / 20</td>
-          <td>7 dias</td>
-        </tr>
-
-        <tr>
-          <td>Metalúrgica Alfa</td>
-          <td>Profissional</td>
-          <td><span class="badge manter">Ativo</span></td>
-          <td>1 / 10</td>
-          <td>35 / 500</td>
-          <td>30/06/2026</td>
-        </tr>
-
-        <tr>
-          <td>Cliente Vencido Exemplo</td>
-          <td>Básico</td>
-          <td><span class="badge alta">Vencido</span></td>
-          <td>3 / 3</td>
-          <td>100 / 100</td>
-          <td>Expirado</td>
-        </tr>
-      </tbody>
-
+      <tbody id="companiesBody"></tbody>
     </table>
-
   </div>
 
   <div class="card">
+    <h2>Usuários e Empresas</h2>
 
-    <h2>Recursos Administrativos Planejados</h2>
-
-    <div class="module-grid">
-
-      <div class="module-card">
-        <strong>Isolamento por cliente</strong>
-        <span>Cada usuário visualizará apenas suas campanhas e respostas.</span>
-      </div>
-
-      <div class="module-card">
-        <strong>Usuário Demo</strong>
-        <span>Acesso temporário para degustação comercial.</span>
-      </div>
-
-      <div class="module-card">
-        <strong>Mapa de Clientes</strong>
-        <span>Visualização futura por cidade/estado.</span>
-      </div>
-
-      <div class="module-card">
-        <strong>Bloqueio por vencimento</strong>
-        <span>Controle automático conforme plano e data de expiração.</span>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="card">
-
-    <h2>Mapa de Clientes</h2>
-
-    <p class="small">
-      Espaço reservado para futuro mapa com localização aproximada dos clientes e campanhas.
-    </p>
-
-    <div style="
-      height:260px;
-      border-radius:18px;
-      background:
-        linear-gradient(135deg, rgba(79,70,229,0.10), rgba(139,92,246,0.08)),
-        #f8fafc;
-      border:1px dashed #c7d2fe;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      color:#667085;
-      padding:20px;
-    ">
-      Mapa futuro de clientes por cidade/estado<br>
-      Ex.: São Paulo, Suzano, Itaquaquecetuba, Alto Tietê
-    </div>
-
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>E-mail</th>
+          <th>Perfil</th>
+          <th>Empresa Atual</th>
+          <th>Associar Empresa</th>
+        </tr>
+      </thead>
+      <tbody id="usersBody"></tbody>
+    </table>
   </div>
 
   <div class="footer">
-    © 2025 AVALIA NR01 — Administração
+    © 2026 AVALIA NR01 — Administração
   </div>
 
 </main>
 
 <script>
-
+const API_URL = "https://psywork-nr01-api.onrender.com";
 const token = localStorage.getItem('token');
+
+let companies = [];
 
 if (!token) {
   window.location.href = "index.html";
@@ -276,6 +160,218 @@ function logout() {
   window.location.href = "index.html";
 }
 
+function authHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  };
+}
+
+async function loadCompanies() {
+  const res = await fetch(`${API_URL}/api/admin/companies`, {
+    headers: authHeaders()
+  });
+
+  if (!res.ok) {
+    alert("Erro ao carregar empresas. Verifique se seu usuário é admin.");
+    return;
+  }
+
+  companies = await res.json();
+
+  document.getElementById("totalCompanies").innerText = companies.length;
+
+  const body = document.getElementById("companiesBody");
+  body.innerHTML = "";
+
+  companies.forEach(c => {
+    body.innerHTML += `
+      <tr>
+        <td>${c.id}</td>
+
+        <td>
+          <input id="name-${c.id}" value="${c.name || ""}">
+        </td>
+
+        <td>
+          <input id="cnpj-${c.id}" value="${c.cnpj || ""}">
+        </td>
+
+        <td>
+          <select id="plan-${c.id}">
+            <option value="demo" ${c.plan === "demo" ? "selected" : ""}>Demo</option>
+            <option value="basico" ${c.plan === "basico" ? "selected" : ""}>Básico</option>
+            <option value="profissional" ${c.plan === "profissional" ? "selected" : ""}>Profissional</option>
+            <option value="premium" ${c.plan === "premium" ? "selected" : ""}>Premium</option>
+          </select>
+        </td>
+
+        <td>
+          <input id="limit-${c.id}" type="number" value="${c.response_limit || 0}">
+        </td>
+
+        <td>
+          <button class="btn" onclick="updateCompany(${c.id})">Salvar</button>
+          <button class="btn danger" onclick="deleteCompany(${c.id})">Excluir</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function createCompany() {
+  const payload = {
+    name: document.getElementById("companyName").value,
+    cnpj: document.getElementById("companyCnpj").value,
+    plan: document.getElementById("companyPlan").value,
+    response_limit: Number(document.getElementById("companyLimit").value)
+  };
+
+  if (!payload.name) {
+    alert("Informe o nome da empresa.");
+    return;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/companies`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert("Erro ao criar empresa.");
+    return;
+  }
+
+  document.getElementById("companyName").value = "";
+  document.getElementById("companyCnpj").value = "";
+  document.getElementById("companyLimit").value = "10000";
+
+  await loadCompanies();
+  await loadUsers();
+
+  alert("Empresa criada com sucesso.");
+}
+
+async function updateCompany(id) {
+  const payload = {
+    name: document.getElementById(`name-${id}`).value,
+    cnpj: document.getElementById(`cnpj-${id}`).value,
+    plan: document.getElementById(`plan-${id}`).value,
+    response_limit: Number(document.getElementById(`limit-${id}`).value)
+  };
+
+  const res = await fetch(`${API_URL}/api/admin/companies/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert("Erro ao atualizar empresa.");
+    return;
+  }
+
+  await loadCompanies();
+  await loadUsers();
+
+  alert("Empresa atualizada com sucesso.");
+}
+
+async function deleteCompany(id) {
+  if (!confirm("Tem certeza que deseja excluir esta empresa?")) return;
+
+  const res = await fetch(`${API_URL}/api/admin/companies/${id}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.detail || "Erro ao excluir empresa.");
+    return;
+  }
+
+  await loadCompanies();
+  await loadUsers();
+
+  alert("Empresa excluída com sucesso.");
+}
+
+async function loadUsers() {
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    headers: authHeaders()
+  });
+
+  if (!res.ok) {
+    alert("Erro ao carregar usuários.");
+    return;
+  }
+
+  const users = await res.json();
+
+  document.getElementById("totalUsers").innerText = users.length;
+
+  const body = document.getElementById("usersBody");
+  body.innerHTML = "";
+
+  users.forEach(u => {
+    const options = companies.map(c => `
+      <option value="${c.id}" ${u.company_id === c.id ? "selected" : ""}>
+        ${c.name}
+      </option>
+    `).join("");
+
+    body.innerHTML += `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.email}</td>
+        <td><span class="badge">${u.role}</span></td>
+        <td>${u.company_name || "Sem empresa"}</td>
+        <td>
+          <select id="user-company-${u.id}">
+            <option value="">Sem empresa</option>
+            ${options}
+          </select>
+
+          <button class="btn" onclick="updateUserCompany(${u.id})">
+            Salvar
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function updateUserCompany(userId) {
+  const value = document.getElementById(`user-company-${userId}`).value;
+
+  const payload = {
+    company_id: value ? Number(value) : null
+  };
+
+  const res = await fetch(`${API_URL}/api/admin/users/${userId}/company`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert("Erro ao associar usuário à empresa.");
+    return;
+  }
+
+  await loadUsers();
+
+  alert("Usuário atualizado com sucesso.");
+}
+
+async function init() {
+  await loadCompanies();
+  await loadUsers();
+}
+
+init();
 </script>
 
 </body>
