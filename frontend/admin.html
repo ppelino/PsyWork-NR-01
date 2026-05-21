@@ -38,7 +38,7 @@
   <div class="topbar">
     <div>
       <h1>Administração</h1>
-      <p class="small">Gestão real de empresas, usuários, planos e limites de respostas.</p>
+      <p class="small">Gestão real de empresas, usuários, planos e limites por assinatura.</p>
     </div>
     <span class="badge">ADMIN</span>
   </div>
@@ -61,7 +61,7 @@
 
     <div class="module-card">
       <strong>SaaS</strong>
-      <span>Planos e limites ativos</span>
+      <span>Planos e limites automáticos</span>
     </div>
   </div>
 
@@ -90,8 +90,22 @@
       </div>
 
       <div class="col-6">
-        <label class="small">Limite de respostas</label>
-        <input id="companyLimit" type="number" value="10000">
+        <label class="small">Limites automáticos do plano</label>
+        <div
+          id="planInfo"
+          style="
+            height:42px;
+            border-radius:12px;
+            border:1px solid #ddd;
+            display:flex;
+            align-items:center;
+            padding:0 14px;
+            background:#f7f7fb;
+            font-weight:600;
+          "
+        >
+          Demo → 1 campanha / 20 respostas
+        </div>
       </div>
     </div>
 
@@ -110,10 +124,11 @@
           <th>Empresa</th>
           <th>CNPJ</th>
           <th>Plano</th>
-          <th>Limite</th>
+          <th>Uso do Plano</th>
           <th>Ações</th>
         </tr>
       </thead>
+
       <tbody id="companiesBody"></tbody>
     </table>
   </div>
@@ -131,6 +146,7 @@
           <th>Associar Empresa</th>
         </tr>
       </thead>
+
       <tbody id="usersBody"></tbody>
     </table>
   </div>
@@ -146,6 +162,13 @@ const API_URL = "https://psywork-nr01-api.onrender.com";
 const token = localStorage.getItem('token');
 
 let companies = [];
+
+const PLAN_TEXTS = {
+  demo: "Demo → 1 campanha / 20 respostas",
+  basico: "Básico → 3 campanhas / 100 respostas",
+  profissional: "Profissional → 10 campanhas / 1000 respostas",
+  premium: "Premium → ilimitado"
+};
 
 if (!token) {
   window.location.href = "index.html";
@@ -165,6 +188,24 @@ function authHeaders() {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${token}`
   };
+}
+
+function renderLimitText(c) {
+  const campaignText =
+    c.campaign_limit === null || c.campaign_limit === undefined
+      ? "Campanhas ilimitadas"
+      : `${c.current_campaigns || 0}/${c.campaign_limit} campanhas`;
+
+  const responseText =
+    c.response_limit === null || c.response_limit === undefined
+      ? "Respostas ilimitadas"
+      : `${c.current_responses || 0}/${c.response_limit} respostas`;
+
+  return `
+    <strong>${campaignText}</strong>
+    <br>
+    <span class="small">${responseText}</span>
+  `;
 }
 
 async function loadCompanies() {
@@ -207,7 +248,7 @@ async function loadCompanies() {
         </td>
 
         <td>
-          <input id="limit-${c.id}" type="number" value="${c.response_limit || 0}">
+          ${renderLimitText(c)}
         </td>
 
         <td>
@@ -223,8 +264,7 @@ async function createCompany() {
   const payload = {
     name: document.getElementById("companyName").value,
     cnpj: document.getElementById("companyCnpj").value,
-    plan: document.getElementById("companyPlan").value,
-    response_limit: Number(document.getElementById("companyLimit").value)
+    plan: document.getElementById("companyPlan").value
   };
 
   if (!payload.name) {
@@ -245,7 +285,8 @@ async function createCompany() {
 
   document.getElementById("companyName").value = "";
   document.getElementById("companyCnpj").value = "";
-  document.getElementById("companyLimit").value = "10000";
+  document.getElementById("companyPlan").value = "demo";
+  document.getElementById("planInfo").innerText = PLAN_TEXTS.demo;
 
   await loadCompanies();
   await loadUsers();
@@ -257,8 +298,7 @@ async function updateCompany(id) {
   const payload = {
     name: document.getElementById(`name-${id}`).value,
     cnpj: document.getElementById(`cnpj-${id}`).value,
-    plan: document.getElementById(`plan-${id}`).value,
-    response_limit: Number(document.getElementById(`limit-${id}`).value)
+    plan: document.getElementById(`plan-${id}`).value
   };
 
   const res = await fetch(`${API_URL}/api/admin/companies/${id}`, {
@@ -330,7 +370,6 @@ async function loadUsers() {
         <td>${u.company_name || "Sem empresa"}</td>
         <td>
           <select id="user-company-${u.id}">
-            <option value="">Sem empresa</option>
             ${options}
           </select>
 
@@ -347,7 +386,7 @@ async function updateUserCompany(userId) {
   const value = document.getElementById(`user-company-${userId}`).value;
 
   const payload = {
-    company_id: value ? Number(value) : null
+    company_id: Number(value)
   };
 
   const res = await fetch(`${API_URL}/api/admin/users/${userId}/company`, {
@@ -365,6 +404,10 @@ async function updateUserCompany(userId) {
 
   alert("Usuário atualizado com sucesso.");
 }
+
+document.getElementById("companyPlan").addEventListener("change", (e) => {
+  document.getElementById("planInfo").innerText = PLAN_TEXTS[e.target.value];
+});
 
 async function init() {
   await loadCompanies();
