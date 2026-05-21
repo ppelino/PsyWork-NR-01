@@ -261,13 +261,6 @@ def get_questions(user=Depends(auth_user), db: Session = Depends(get_db)):
     qs = db.query(Question).all()
     return [{"id": q.id, "dimension": q.dimension, "text": q.text} for q in qs]
 
-from passlib.hash import pbkdf2_sha256
-
-senha = "Edso2506"
-hash_senha = pbkdf2_sha256.hash(senha)
-print(hash_senha)
-
-
 # ==========================
 # Rotas públicas — campanha
 # ==========================
@@ -470,3 +463,173 @@ def delete_campaign(
     db.commit()
 
     return {"ok": True}
+# ==========================
+# ADMIN - SCHEMAS
+# ==========================
+class AdminCompanyIn(BaseModel):
+    name: str
+    cnpj: str | None = None
+    plan: str | None = "demo"
+    response_limit: int | None = 10000
+
+
+class AdminCompanyUpdate(BaseModel):
+    name: str | None = None
+    cnpj: str | None = None
+    plan: str | None = None
+    response_limit: int | None = None
+
+
+class AdminUserCompanyUpdate(BaseModel):
+    company_id: int | None = None
+
+
+def require_admin(user):
+    if user.role != "admin":
+        raise HTTPException(403, "Acesso negado")
+    return True
+
+
+# ==========================
+# ADMIN - EMPRESAS
+# ==========================
+@app.get("/api/admin/companies")
+def admin_list_companies(user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    companies = db.query(Company).order_by(Company.id.desc()).all()
+
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "cnpj": c.cnpj,
+            "plan": c.plan,
+            "response_limit": c.response_limit
+        }
+        for c in companies
+    ]
+
+
+@app.post("/api/admin/companies")
+def admin_create_company(data: AdminCompanyIn, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    company = Company(
+        name=data.name,
+        cnpj=data.cnpj,
+        plan=data.plan or "demo",
+        response_limit=data.response_limit or 10000
+    )
+
+    db.add(company)
+    db.commit()
+    db.refresh(company)
+
+    return {
+        "ok": True,
+        "company": {
+            "id": company.id,
+            "name": company.name,
+            "cnpj": company.cnpj,
+            "plan": company.plan,
+            "response_limit": company.response_limit
+        }
+    }
+
+
+@app.put("/api/admin/companies/{company_id}")
+def admin_update_company(company_id: int, data: AdminCompanyUpdate, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    company = db.query(Company).filter_by(id=company_id).first()
+
+    if not company:
+        raise HTTPException(404, "Empresa não encontrada")
+
+    if data.name is not None:
+        company.name = data.name
+
+    if data.cnpj is not None:
+        company.cnpj = data.cnpj
+
+    if data.plan is not None:
+        company.plan = data.plan
+
+    if data.response_limit is not None:
+        company.response_limit = data.response_limit
+
+    db.commit()
+    db.refresh(company)
+
+    return {"ok": True}
+
+
+@app.delete("/api/admin/companies/{company_id}")
+def admin_delete_company(company_id: int, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    company = db.query(Company).filter_by(id=company_id).first()
+
+    if not company:
+        raise HTTPException(404, "Empresa não encontrada")
+
+    users_count = db.query(User).filter_by(company_id=company_id).count()
+    campaigns_count = db.query(Campaign).filter_by(company_id=company_id).count()
+
+    if users_count > 0 or campaigns_count > 0:
+        raise HTTPException(
+            400,
+            "Não é possível excluir empresa com usuários ou campanhas vinculadas"
+        )
+
+    db.delete(company)
+    db.commit()
+
+    return {"ok": True}
+
+
+# ==========================
+# ADMIN - USUÁRIOS
+# ==========================
+@app.get("/api/admin/users")
+def admin_list_users(user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    users = db.query(User).order_by(User.id.desc()).all()
+
+    result = []
+
+    for u in users:
+        result.append({
+            "id": u.id,
+            "email": u.email,
+            "role": u.role,
+            "company_id": u.company_id,
+            "company_name": u.company.name if u.company else None
+        })
+
+    return result
+
+
+@app.put("/api/admin/users/{user_id}/company")
+def admin_update_user_company(user_id: int, data: AdminUserCompanyUpdate, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    target_user = db.query(User).filter_by(id=user_id).first()
+
+    if not target_user:
+        raise HTTPException(404, "Usuário não encontrado")
+
+    if data.company_id is not None:
+        company = db.query(Company).filter_by(id=data.company_id).first()
+
+        if not company:
+            raise HTTPException(404, "Empresa não encontrada")
+
+    target_user.company_id = data.company_id
+
+    db.commit()
+
+    return {"ok": True}
+
