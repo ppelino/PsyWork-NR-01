@@ -7,165 +7,215 @@
 
   <link rel="stylesheet" href="assets/branding.css">
 </head>
+
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar">
 
-    <div class="side-logo">
-      <img src="assets/logo.svg" alt="Logo">
+  <div class="side-logo">
+    <img
+      src="assets/datainsight.jpg"
+      alt="Datainsight SST"
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        object-fit:cover;
+        box-shadow:0 4px 14px rgba(0,0,0,.18);
+      "
+    >
 
-      <div>
-        <strong>AVALIA NR01</strong>
-        <span>Base Técnica</span>
-      </div>
+    <div>
+      <strong>AVALIA NR01</strong>
+      <span>Powered by Datainsight</span>
+    </div>
+  </div>
+
+  <a class="side-link" href="dashboard.html">Dashboard</a>
+  <a class="side-link" href="campaigns.html">Campanhas</a>
+  <a class="side-link" href="report.html">Relatórios</a>
+  <a class="side-link" href="plans.html">Planos</a>
+  <a class="side-link admin-only" href="admin.html">Administração</a>
+  <a class="side-link" href="support.html">Suporte</a>
+  <a class="side-link active" href="normas.html">Normas Técnicas</a>
+
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
+
+</aside>
+
+<main class="app-main">
+
+  <div class="topbar">
+    <div>
+      <h1>Normas Técnicas</h1>
+      <p class="small">
+        Consulta rápida sobre fatores psicossociais, NR01 e orientações técnicas.
+      </p>
     </div>
 
-    <a class="side-link" href="dashboard.html">Dashboard</a>
-    <a class="side-link" href="campaigns.html">Campanhas</a>
-    <a class="side-link" href="report.html">Relatórios</a>
-    <a class="side-link" href="plans.html">Planos</a>
-    <a class="side-link" href="admin.html">Administração</a>
-    <a class="side-link" href="support.html">Suporte</a>
-    <a class="side-link active" href="normas.html">Normas Técnicas</a>
+    <span class="badge">NR01</span>
+  </div>
 
-    <button onclick="logout()" class="btn danger side-logout">
-      Sair
-    </button>
+  <div class="module-grid">
 
-  </aside>
-
-  <main class="app-main">
-
-    <div class="topbar">
-
-      <div>
-        <h1>Normas Técnicas</h1>
-
-        <p class="small">
-          Consulta rápida sobre fatores psicossociais, NR01 e orientações técnicas.
-        </p>
-      </div>
-
-      <span class="badge">
-        NR01
+    <div class="module-card">
+      <strong>NR01</strong>
+      <span>
+        Diretrizes gerais sobre gerenciamento de riscos ocupacionais e fatores psicossociais.
       </span>
-
     </div>
 
-    <div class="module-grid">
-
-      <div class="module-card">
-        <strong>NR01</strong>
-
-        <span>
-          Diretrizes gerais sobre gerenciamento de riscos ocupacionais e fatores psicossociais.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>Fatores Psicossociais</strong>
-
-        <span>
-          Aspectos relacionados à organização do trabalho, pressão, apoio e relações interpessoais.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>Plano de Ação</strong>
-
-        <span>
-          Recomendações para mitigação de riscos psicossociais nas organizações.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>PGR e SST</strong>
-
-        <span>
-          Integração entre gestão psicossocial, ergonomia e segurança do trabalho.
-        </span>
-      </div>
-
+    <div class="module-card">
+      <strong>Fatores Psicossociais</strong>
+      <span>
+        Organização do trabalho, pressão, apoio, liderança e relações interpessoais.
+      </span>
     </div>
 
-    <div class="card">
-
-      <h2>NR01 — Gestão de Riscos</h2>
-
-      <p class="small">
-        A Norma Regulamentadora NR01 estabelece disposições gerais e requisitos para o gerenciamento de riscos ocupacionais nas organizações.
-      </p>
-
-      <p class="small">
-        Os fatores psicossociais estão relacionados à forma como o trabalho é organizado, às relações interpessoais e às exigências emocionais do ambiente laboral.
-      </p>
-
-      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
-
-      <h3>Exemplos de fatores psicossociais</h3>
-
-      <ul class="small">
-
-        <li>Excesso de pressão e cobrança</li>
-
-        <li>Falta de apoio da liderança</li>
-
-        <li>Assédio moral</li>
-
-        <li>Baixa autonomia</li>
-
-        <li>Conflitos interpessoais</li>
-
-        <li>Ambiente organizacional inadequado</li>
-
-        <li>Sobrecarga emocional</li>
-
-      </ul>
-
-      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
-
-      <h3>Objetivo da Avaliação</h3>
-
-      <p class="small">
-        A avaliação psicossocial auxilia empresas e profissionais na identificação de fatores críticos relacionados à saúde mental ocupacional, contribuindo para ações preventivas e melhoria organizacional.
-      </p>
-
-      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
-
-      <h3>Observação Técnica</h3>
-
-      <p class="small">
-        Este sistema possui finalidade de apoio técnico e organizacional, não substituindo avaliação especializada presencial quando necessária.
-      </p>
-
+    <div class="module-card">
+      <strong>Plano de Ação</strong>
+      <span>
+        Recomendações para controle e mitigação de riscos psicossociais.
+      </span>
     </div>
 
-    <div class="footer">
-      © 2025 AVALIA NR01 — Normas Técnicas
+    <div class="module-card">
+      <strong>PGR e SST</strong>
+      <span>
+        Integração entre gestão psicossocial, ergonomia e segurança do trabalho.
+      </span>
     </div>
 
-  </main>
+  </div>
 
-  <script>
+  <div class="card" style="border-left:6px solid #ef4444; background:linear-gradient(135deg,#fff,#fff7f7);">
 
-    const token = localStorage.getItem('token');
+    <span class="badge alta">Nova obrigação</span>
 
-    if (!token) {
-      window.location.href = "index.html";
-    }
+    <h2 style="margin-top:14px;">
+      NR01 — Riscos Psicossociais obrigatórios no PGR
+    </h2>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-    }
+    <p class="small">
+      A partir de <strong>26/05/2026</strong>, as empresas deverão considerar os
+      <strong>fatores de risco psicossociais</strong> dentro do Gerenciamento de Riscos
+      Ocupacionais da NR01, integrando essa análise ao PGR.
+    </p>
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
+    <p class="small">
+      Isso significa que aspectos como pressão excessiva, assédio, conflitos,
+      falta de apoio da liderança, sobrecarga emocional, baixa autonomia e ambiente
+      organizacional inadequado passam a exigir identificação, avaliação e ações de controle.
+    </p>
 
-  </script>
+    <p class="small">
+      O AVALIA NR01 atua como ferramenta de apoio para diagnóstico inicial,
+      organização de indicadores, geração de plano de ação e acompanhamento dos fatores
+      psicossociais no ambiente de trabalho.
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <h2>NR01 — Gestão de Riscos</h2>
+
+    <p class="small">
+      A Norma Regulamentadora NR01 estabelece disposições gerais e requisitos para o
+      gerenciamento de riscos ocupacionais nas organizações.
+    </p>
+
+    <p class="small">
+      Os fatores psicossociais estão relacionados à forma como o trabalho é organizado,
+      às relações interpessoais e às exigências emocionais do ambiente laboral.
+    </p>
+
+    <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+    <h3>Exemplos de fatores psicossociais</h3>
+
+    <ul class="small">
+      <li>Excesso de pressão e cobrança</li>
+      <li>Falta de apoio da liderança</li>
+      <li>Assédio moral ou sexual</li>
+      <li>Baixa autonomia</li>
+      <li>Conflitos interpessoais</li>
+      <li>Ambiente organizacional inadequado</li>
+      <li>Sobrecarga emocional</li>
+      <li>Metas incompatíveis com a realidade do trabalho</li>
+      <li>Comunicação falha entre gestão e trabalhadores</li>
+      <li>Violência, humilhações ou desrespeito no ambiente laboral</li>
+    </ul>
+
+    <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+    <h3>O que as empresas devem fazer</h3>
+
+    <ul class="small">
+      <li>Identificar fatores de risco psicossociais existentes no ambiente de trabalho.</li>
+      <li>Avaliar a intensidade, frequência e impacto desses fatores.</li>
+      <li>Registrar os riscos no processo de gerenciamento da NR01/PGR.</li>
+      <li>Definir plano de ação com medidas preventivas e corretivas.</li>
+      <li>Acompanhar indicadores e revisar periodicamente as medidas adotadas.</li>
+    </ul>
+
+    <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+    <h3>Objetivo da Avaliação</h3>
+
+    <p class="small">
+      A avaliação psicossocial auxilia empresas e profissionais na identificação de fatores
+      críticos relacionados à saúde mental ocupacional, contribuindo para ações preventivas,
+      melhoria organizacional e apoio à tomada de decisão.
+    </p>
+
+    <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+
+    <h3>Observação Técnica</h3>
+
+    <p class="small">
+      Este sistema possui finalidade de apoio técnico e organizacional, não substituindo
+      avaliação especializada presencial quando necessária. A interpretação dos resultados
+      deve ser realizada por profissional habilitado ou equipe técnica responsável pela SST.
+    </p>
+
+  </div>
+
+  <div class="footer">
+    © 2025 AVALIA NR01 — Normas Técnicas
+  </div>
+
+</main>
+
+<script>
+
+const token = localStorage.getItem('token');
+const userRole = localStorage.getItem('role');
+
+if (!token) {
+  window.location.href = "index.html";
+}
+
+if (userRole !== 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'none';
+  });
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+
+</script>
 
 </body>
 </html>
