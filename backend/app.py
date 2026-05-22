@@ -57,10 +57,10 @@ signer = TimestampSigner(os.environ.get("NR01_SECRET", "dev-secret"))
 # Banco
 # ==========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_URL = os.environ.get("DB_URL")
+DB_URL = os.environ.get("DB_URL") or os.environ.get("DATABASE_URL")
 
 if not DB_URL:
-    DB_URL = f"sqlite:///{os.path.join(BASE_DIR, 'nr01.db')}"
+    raise Exception("DB_URL ou DATABASE_URL não configurado no ambiente")
 
 engine = create_engine(DB_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
