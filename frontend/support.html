@@ -7,155 +7,211 @@
 
   <link rel="stylesheet" href="assets/branding.css">
 </head>
+
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="side-logo">
-      <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+<aside class="sidebar" id="sidebar">
 
-      <div>
-        <strong>AVALIA NR01</strong>
-        <span>Plataforma Psicossocial</span>
-      </div>
+  <div class="side-logo">
+    <img
+      src="assets/datainsight.jpg"
+      alt="Datainsight SST"
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        object-fit:cover;
+        box-shadow:0 4px 14px rgba(0,0,0,.18);
+      "
+    >
+
+    <div>
+      <strong>AVALIA NR01</strong>
+      <span>Powered by Datainsight</span>
     </div>
+  </div>
 
-    <a class="side-link" href="dashboard.html">Dashboard</a>
-    <a class="side-link" href="campaigns.html">Campanhas</a>
-    <a class="side-link" href="report.html">Relatórios</a>
-    <a class="side-link" href="plans.html">Planos</a>
-    <a class="side-link" href="admin.html">Administração</a>
-    <a class="side-link active" href="support.html">Suporte</a>
-    <a class="side-link" href="normas.html">Normas Técnicas</a>
+  <a class="side-link" href="dashboard.html">Dashboard</a>
+  <a class="side-link" href="campaigns.html">Campanhas</a>
+  <a class="side-link" href="report.html">Relatórios</a>
+  <a class="side-link" href="plans.html">Planos</a>
+  <a class="side-link admin-only" href="admin.html">Administração</a>
+  <a class="side-link active" href="support.html">Suporte</a>
+  <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-    <button onclick="logout()" class="btn danger side-logout">
-      Sair
-    </button>
-  </aside>
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
 
-  <main class="app-main">
+</aside>
 
-    <div class="topbar">
-      <div>
-        <h1>Central de Suporte</h1>
-        <p class="small">
-          Atendimento técnico, implantação e suporte comercial.
-        </p>
-      </div>
+<main class="app-main">
 
-      <span class="badge">SUPORTE</span>
-    </div>
+  <div class="topbar">
 
-    <div class="module-grid">
-
-      <div class="module-card">
-        <strong>Suporte Técnico</strong>
-        <span>
-          Atendimento para dúvidas técnicas, acesso e funcionamento da plataforma.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>Implantação</strong>
-        <span>
-          Auxílio na configuração inicial e estruturação das campanhas.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>Treinamento</strong>
-        <span>
-          Orientações sobre utilização da NR01 psicossocial e dashboards.
-        </span>
-      </div>
-
-      <div class="module-card">
-        <strong>Atualizações</strong>
-        <span>
-          Melhorias contínuas da plataforma e novos recursos.
-        </span>
-      </div>
-
-    </div>
-
-    <div class="card">
-
-      <h2>Contato Comercial</h2>
+    <div>
+      <h1>Central de Suporte</h1>
 
       <p class="small">
-        Entre em contato para implantação, planos corporativos ou suporte técnico.
+        Atendimento técnico, implantação e suporte comercial.
       </p>
+    </div>
 
-      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;">
+    <span class="badge">SUPORTE</span>
 
-        <a
-          href="https://wa.me/55SEUNUMEROAQUI"
-          target="_blank"
-          class="btn"
-        >
-          WhatsApp Suporte
-        </a>
+  </div>
 
-        <a
-          href="mailto:seuemail@empresa.com"
-          class="btn secondary"
-        >
-          E-mail Comercial
-        </a>
+  <div class="module-grid">
 
-      </div>
+    <div class="module-card">
+      <strong>Suporte Técnico</strong>
 
-      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+      <span>
+        Atendimento para dúvidas técnicas, acesso e funcionamento da plataforma.
+      </span>
+    </div>
 
-      <h3>Horário de Atendimento</h3>
+    <div class="module-card">
+      <strong>Implantação</strong>
 
-      <p class="small">
-        Segunda à Sexta<br>
-        08h00 às 18h00
-      </p>
+      <span>
+        Auxílio na configuração inicial e estruturação das campanhas.
+      </span>
+    </div>
 
-      <hr style="margin:28px 0; border:none; border-top:1px solid #e5e7eb;">
+    <div class="module-card">
+      <strong>Treinamento</strong>
 
-      <h3>Documentação</h3>
+      <span>
+        Orientações sobre utilização da NR01 psicossocial e dashboards.
+      </span>
+    </div>
 
-      <p class="small">
-        Em breve:
-      </p>
+    <div class="module-card">
+      <strong>Atualizações</strong>
 
-      <ul class="small">
-        <li>Manual do sistema</li>
-        <li>Guia NR01 Psicossocial</li>
-        <li>Boas práticas</li>
-        <li>Modelos de implantação</li>
-      </ul>
+      <span>
+        Melhorias contínuas da plataforma e novos recursos.
+      </span>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2>Contato Comercial</h2>
+
+    <p class="small">
+      Entre em contato para implantação, planos corporativos ou suporte técnico.
+    </p>
+
+    <div
+      style="
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-top:18px;
+      "
+    >
+
+      <a
+        href="https://wa.me/55SEUNUMEROAQUI"
+        target="_blank"
+        class="btn"
+      >
+        WhatsApp Suporte
+      </a>
+
+      <a
+        href="mailto:seuemail@empresa.com"
+        class="btn secondary"
+      >
+        E-mail Comercial
+      </a>
 
     </div>
 
-    <div class="footer">
-      © 2025 AVALIA NR01 — Suporte Datainsight
-    </div>
+    <hr
+      style="
+        margin:28px 0;
+        border:none;
+        border-top:1px solid #e5e7eb;
+      "
+    >
 
-  </main>
+    <h3>Horário de Atendimento</h3>
 
-  <script>
+    <p class="small">
+      Segunda à Sexta<br>
+      08h00 às 18h00
+    </p>
 
-    const token = localStorage.getItem('token');
+    <hr
+      style="
+        margin:28px 0;
+        border:none;
+        border-top:1px solid #e5e7eb;
+      "
+    >
 
-    if (!token) {
-      window.location.href = "index.html";
-    }
+    <h3>Documentação</h3>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-    }
+    <p class="small">
+      Em breve:
+    </p>
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
+    <ul class="small">
+      <li>Manual do sistema</li>
+      <li>Guia NR01 Psicossocial</li>
+      <li>Boas práticas</li>
+      <li>Modelos de implantação</li>
+    </ul>
 
-  </script>
+  </div>
+
+  <div class="footer">
+    © 2025 AVALIA NR01 — Suporte Datainsight
+  </div>
+
+</main>
+
+<script>
+
+const token = localStorage.getItem('token');
+
+const userRole =
+  localStorage.getItem('role');
+
+if (!token) {
+  window.location.href = "index.html";
+}
+
+if (userRole !== 'admin') {
+
+  document
+    .querySelectorAll('.admin-only')
+
+    .forEach(el => {
+      el.style.display = 'none';
+    });
+
+}
+
+function toggleSidebar() {
+  document
+    .getElementById('sidebar')
+    .classList
+    .toggle('open');
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+
+</script>
 
 </body>
 </html>
