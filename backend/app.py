@@ -184,7 +184,8 @@ def seed():
         db.close()
 
 
-seed()
+if os.environ.get("ENABLE_SEED") == "true":
+    seed()
 
 
 # ==========================
