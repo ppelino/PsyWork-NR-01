@@ -292,7 +292,11 @@ class AdminCompanyUpdate(BaseModel):
 
 class AdminUserCompanyUpdate(BaseModel):
     company_id: int
-
+class AdminUserCreate(BaseModel):
+    email: str
+    password: str
+    role: str = "user"
+    company_id: int
 
 # ==========================
 # Health
@@ -798,6 +802,59 @@ def admin_delete_company(company_id: int, user=Depends(auth_user), db: Session =
 # ==========================
 # Admin - Usuários
 # ==========================
+@app.post("/api/admin/users")
+def admin_create_user(data: AdminUserCreate, user=Depends(auth_user), db: Session = Depends(get_db)):
+    require_admin(user)
+
+    email = data.email.strip().lower()
+
+    if not email or not data.password:
+        raise HTTPException(
+            400,
+            "E-mail e senha são obrigatórios"
+        )
+
+    existing = db.query(User).filter_by(email=email).first()
+
+    if existing:
+        raise HTTPException(
+            400,
+            "Já existe usuário com este e-mail"
+        )
+
+    company = db.query(Company).filter_by(id=data.company_id).first()
+
+    if not company:
+        raise HTTPException(
+            404,
+            "Empresa não encontrada"
+        )
+
+    role = (data.role or "user").lower().strip()
+
+    if role not in ["admin", "user", "gestor"]:
+        role = "user"
+
+    new_user = User(
+        email=email,
+        pwd_hash=pbkdf2_sha256.hash(data.password),
+        role=role,
+        company_id=data.company_id
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "ok": True,
+        "user": {
+            "id": new_user.id,
+            "email": new_user.email,
+            "role": new_user.role,
+            "company_id": new_user.company_id
+        }
+    }
 @app.get("/api/admin/users")
 def admin_list_users(user=Depends(auth_user), db: Session = Depends(get_db)):
     require_admin(user)
