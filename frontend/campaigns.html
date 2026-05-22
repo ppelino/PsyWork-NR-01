@@ -13,10 +13,21 @@
 
 <aside class="sidebar" id="sidebar">
   <div class="side-logo">
-    <img src="assets/logo.svg" alt="Logo">
+    <img
+      src="assets/datainsight.jpg"
+      alt="Datainsight SST"
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        object-fit:cover;
+        box-shadow:0 4px 14px rgba(0,0,0,.18);
+      "
+    >
+
     <div>
       <strong>AVALIA NR01</strong>
-      <span>Plataforma Psicossocial</span>
+      <span>Powered by Datainsight</span>
     </div>
   </div>
 
@@ -28,7 +39,9 @@
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
-  <button onclick="logout()" class="btn danger side-logout">Sair</button>
+  <button onclick="logout()" class="btn danger side-logout">
+    Sair
+  </button>
 </aside>
 
 <main class="app-main">
@@ -89,9 +102,16 @@
 const API_URL = "https://psywork-nr01-api.onrender.com";
 
 let token = localStorage.getItem('token');
+const userRole = localStorage.getItem('role');
 
 if (!token) {
   location.href = 'index.html';
+}
+
+if (userRole !== 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'none';
+  });
 }
 
 function toggleSidebar() {
@@ -211,17 +231,17 @@ async function createCamp() {
       body: JSON.stringify(payload)
     });
 
-   if (!res.ok) {
-  let msg = "Erro ao criar campanha.";
+    if (!res.ok) {
+      let msg = "Erro ao criar campanha.";
 
-  try {
-    const err = await res.json();
-    msg = err.detail || msg;
-  } catch (e) {}
+      try {
+        const err = await res.json();
+        msg = err.detail || msg;
+      } catch (e) {}
 
-  alert(msg);
-  return;
-} 
+      alert(msg);
+      return;
+    }
 
     title.value = '';
     meta.value = '';
