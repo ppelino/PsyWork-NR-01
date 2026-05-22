@@ -134,6 +134,59 @@
   </div>
 
   <div class="card">
+    <div class="card">
+
+  <h2>Cadastrar Usuário</h2>
+
+  <div class="grid">
+
+    <div class="col-6">
+      <label class="small">E-mail</label>
+
+      <input
+        id="newUserEmail"
+        type="email"
+        placeholder="cliente@email.com"
+      >
+    </div>
+
+    <div class="col-6">
+      <label class="small">Senha provisória</label>
+
+      <input
+        id="newUserPassword"
+        type="password"
+        placeholder="Senha inicial"
+      >
+    </div>
+
+    <div class="col-6">
+      <label class="small">Perfil</label>
+
+      <select id="newUserRole">
+        <option value="user">Usuário</option>
+        <option value="gestor">Gestor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <div class="col-6">
+      <label class="small">Empresa</label>
+
+      <select id="newUserCompany"></select>
+    </div>
+
+  </div>
+
+  <button
+    class="btn"
+    style="margin-top:16px;"
+    onclick="createUser()"
+  >
+    Criar Usuário
+  </button>
+
+</div>
     <h2>Usuários e Empresas</h2>
 
     <table class="table">
@@ -225,7 +278,19 @@ async function loadCompanies() {
 
   const body = document.getElementById("companiesBody");
   body.innerHTML = "";
+const userCompanySelect =
+  document.getElementById("newUserCompany");
 
+if (userCompanySelect) {
+
+  userCompanySelect.innerHTML =
+    companies.map(c => `
+      <option value="${c.id}">
+        ${c.name}
+      </option>
+    `).join("");
+
+}
   companies.forEach(c => {
     body.innerHTML += `
       <tr>
@@ -437,7 +502,76 @@ async function deleteUser(userId) {
 document.getElementById("companyPlan").addEventListener("change", (e) => {
   document.getElementById("planInfo").innerText = PLAN_TEXTS[e.target.value];
 });
+async function createUser() {
 
+  const payload = {
+    email:
+      document
+        .getElementById("newUserEmail")
+        .value
+        .trim(),
+
+    password:
+      document
+        .getElementById("newUserPassword")
+        .value
+        .trim(),
+
+    role:
+      document
+        .getElementById("newUserRole")
+        .value,
+
+    company_id: Number(
+      document
+        .getElementById("newUserCompany")
+        .value
+    )
+  };
+
+  if (
+    !payload.email ||
+    !payload.password ||
+    !payload.company_id
+  ) {
+    alert(
+      "Preencha e-mail, senha e empresa."
+    );
+
+    return;
+  }
+
+  const res = await fetch(
+    `${API_URL}/api/admin/users`,
+    {
+      method: "POST",
+
+      headers: authHeaders(),
+
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!res.ok) {
+
+    const err = await res.json();
+
+    alert(
+      err.detail ||
+      "Erro ao criar usuário."
+    );
+
+    return;
+  }
+
+  document.getElementById("newUserEmail").value = "";
+  document.getElementById("newUserPassword").value = "";
+  document.getElementById("newUserRole").value = "user";
+
+  await loadUsers();
+
+  alert("Usuário criado com sucesso.");
+}
 async function init() {
   await loadCompanies();
   await loadUsers();
