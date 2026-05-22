@@ -15,11 +15,21 @@
 <aside class="sidebar" id="sidebar">
 
   <div class="side-logo">
-    <img src="assets/logo.svg" alt="Logo AVALIA NR01">
+    <img
+      src="assets/datainsight.jpg"
+      alt="Datainsight SST"
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        object-fit:cover;
+        box-shadow:0 4px 14px rgba(0,0,0,.18);
+      "
+    >
 
     <div>
       <strong>AVALIA NR01</strong>
-      <span>Plataforma Psicossocial</span>
+      <span>Powered by Datainsight</span>
     </div>
   </div>
 
@@ -27,7 +37,7 @@
   <a class="side-link" href="campaigns.html">Campanhas</a>
   <a class="side-link" href="report.html">Relatórios</a>
   <a class="side-link active" href="plans.html">Planos</a>
-  <a class="side-link" href="admin.html">Administração</a>
+  <a class="side-link admin-only" href="admin.html">Administração</a>
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
@@ -90,7 +100,7 @@
 
       <p class="small">
         • Até 10 campanhas<br>
-        • Até 500 respostas<br>
+        • Até 1000 respostas<br>
         • Relatórios por campanha<br>
         • Exportação CSV/PDF<br>
         • Dashboard executivo<br>
@@ -104,8 +114,8 @@
       <span>Para uso recorrente e corporativo.</span>
 
       <p class="small">
-        • Campanhas ampliadas<br>
-        • Maior limite de respostas<br>
+        • Campanhas ilimitadas<br>
+        • Respostas ilimitadas<br>
         • Relatório premium<br>
         • Plano de ação técnico<br>
         • Suporte de implantação<br>
@@ -136,12 +146,12 @@
       Para implantação, dúvidas sobre planos ou suporte técnico, entre em contato.
     </p>
 
-    <a href="https://wa.me/55SEUNUMEROAQUI"
-       class="btn secondary"
-       target="_blank">
-
+    <a
+      href="https://wa.me/55SEUNUMEROAQUI"
+      class="btn secondary"
+      target="_blank"
+    >
       Falar no WhatsApp
-
     </a>
 
   </div>
@@ -150,63 +160,65 @@
 
     <h2>Comparativo dos Planos</h2>
 
-    <table class="table">
+    <div class="table-responsive">
+      <table class="table">
 
-      <thead>
-        <tr>
-          <th>Recurso</th>
-          <th>Demo</th>
-          <th>Básico</th>
-          <th>Profissional</th>
-          <th>Premium</th>
-        </tr>
-      </thead>
+        <thead>
+          <tr>
+            <th>Recurso</th>
+            <th>Demo</th>
+            <th>Básico</th>
+            <th>Profissional</th>
+            <th>Premium</th>
+          </tr>
+        </thead>
 
-      <tbody>
+        <tbody>
 
-        <tr>
-          <td>Campanhas</td>
-          <td>1</td>
-          <td>3</td>
-          <td>10</td>
-          <td>Ampliado</td>
-        </tr>
+          <tr>
+            <td>Campanhas</td>
+            <td>1</td>
+            <td>3</td>
+            <td>10</td>
+            <td>Ilimitado</td>
+          </tr>
 
-        <tr>
-          <td>Respostas</td>
-          <td>20</td>
-          <td>100</td>
-          <td>500</td>
-          <td>Maior limite</td>
-        </tr>
+          <tr>
+            <td>Respostas</td>
+            <td>20</td>
+            <td>100</td>
+            <td>1000</td>
+            <td>Ilimitado</td>
+          </tr>
 
-        <tr>
-          <td>Dashboard</td>
-          <td>Básico</td>
-          <td>Sim</td>
-          <td>Executivo</td>
-          <td>Premium</td>
-        </tr>
+          <tr>
+            <td>Dashboard</td>
+            <td>Básico</td>
+            <td>Sim</td>
+            <td>Executivo</td>
+            <td>Premium</td>
+          </tr>
 
-        <tr>
-          <td>Exportação</td>
-          <td>Não</td>
-          <td>Simples</td>
-          <td>CSV/PDF</td>
-          <td>PDF Premium</td>
-        </tr>
+          <tr>
+            <td>Exportação</td>
+            <td>Não</td>
+            <td>Simples</td>
+            <td>CSV/PDF</td>
+            <td>PDF Premium</td>
+          </tr>
 
-        <tr>
-          <td>Suporte</td>
-          <td>Limitado</td>
-          <td>Básico</td>
-          <td>Prioritário</td>
-          <td>Implantação</td>
-        </tr>
+          <tr>
+            <td>Suporte</td>
+            <td>Limitado</td>
+            <td>Básico</td>
+            <td>Prioritário</td>
+            <td>Implantação</td>
+          </tr>
 
-      </tbody>
+        </tbody>
 
-    </table>
+      </table>
+    </div>
 
   </div>
 
@@ -219,9 +231,16 @@
 <script>
 
 const token = localStorage.getItem('token');
+const userRole = localStorage.getItem('role');
 
 if (!token) {
   window.location.href = "index.html";
+}
+
+if (userRole !== 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'none';
+  });
 }
 
 function toggleSidebar() {
