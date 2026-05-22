@@ -32,13 +32,13 @@
     <strong>AVALIA NR01</strong>
     <span>Powered by Datainsight</span>
   </div>
-</div> 
+</div>
 
   <a class="side-link active" href="dashboard.html">Dashboard</a>
   <a class="side-link" href="campaigns.html">Campanhas</a>
   <a class="side-link" href="report.html">Relatórios</a>
   <a class="side-link" href="plans.html">Planos</a>
-<a class="side-link admin-only" href="admin.html">Administração</a>
+  <a class="side-link admin-only" href="admin.html">Administração</a>
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
@@ -53,6 +53,7 @@
   <div class="topbar">
     <div>
       <h1>Dashboard Executivo</h1>
+
       <p class="small">
         Resumo das médias por dimensão psicossocial e plano de ação sugerido.
       </p>
@@ -78,7 +79,7 @@
       <span>Assinatura, suporte e Hotmart.</span>
     </a>
 
-    <a class="module-card" href="admin.html">
+    <a class="module-card admin-only" href="admin.html">
       <strong>Administração</strong>
       <span>Clientes, usuários e vencimentos.</span>
     </a>
@@ -97,7 +98,9 @@
 
       <div class="dashboard-left">
 
-        <h3 class="section-title">Médias por dimensão</h3>
+        <h3 class="section-title">
+          Médias por dimensão
+        </h3>
 
         <div class="chart-wrap">
           <canvas id="radar"></canvas>
@@ -107,7 +110,9 @@
 
       <div class="dashboard-right">
 
-        <h3 class="section-title">Plano de ação sugerido</h3>
+        <h3 class="section-title">
+          Plano de ação sugerido
+        </h3>
 
         <div id="actions"></div>
 
@@ -125,16 +130,36 @@
 
 <script>
 
+const API_URL =
+  "https://psywork-nr01-api.onrender.com";
+
 let token = localStorage.getItem('token');
+
+const userRole =
+  localStorage.getItem('role');
 
 if (!token) {
   location.href = 'index.html';
 }
 
+if (userRole !== 'admin') {
+
+  document
+    .querySelectorAll('.admin-only')
+
+    .forEach(el => {
+      el.style.display = 'none';
+    });
+
+}
+
 let RADAR;
 
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  document
+    .getElementById('sidebar')
+    .classList
+    .toggle('open');
 }
 
 function logout() {
@@ -144,34 +169,48 @@ function logout() {
 
 async function load() {
 
-  const actionsContainer = document.getElementById('actions');
+  const actionsContainer =
+    document.getElementById('actions');
 
   try {
 
-    const camps = await fetch('/api/campaigns', {
-      headers: {
-        Authorization: 'Bearer ' + token
+    const camps = await fetch(
+      API_URL + '/api/campaigns',
+      {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
       }
-    }).then(r => r.json());
+    ).then(r => r.json());
 
     if (!camps.length) {
+
       actionsContainer.innerHTML =
         '<p class="small">Nenhuma campanha encontrada. Crie uma campanha em <b>Campanhas</b> para visualizar o painel.</p>';
+
       return;
     }
 
-    const sum = await fetch('/api/summary/' + camps[0].id, {
-      headers: {
-        Authorization: 'Bearer ' + token
+    const sum = await fetch(
+      API_URL + '/api/summary/' + camps[0].id,
+      {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
       }
-    }).then(r => r.json());
+    ).then(r => r.json());
 
-    const labels = Object.keys(sum.average || {});
-    const data = Object.values(sum.average || {});
+    const labels =
+      Object.keys(sum.average || {});
+
+    const data =
+      Object.values(sum.average || {});
 
     if (!labels.length) {
+
       actionsContainer.innerHTML =
         '<p class="small">Ainda não há respostas para gerar gráficos.</p>';
+
       return;
     }
 
@@ -179,10 +218,14 @@ async function load() {
       RADAR.destroy();
     }
 
-    RADAR = new Chart(document.getElementById('radar'), {
+    RADAR = new Chart(
+      document.getElementById('radar'),
+      {
+
       type: 'radar',
 
       data: {
+
         labels: labels,
 
         datasets: [{
@@ -193,6 +236,7 @@ async function load() {
       },
 
       options: {
+
         responsive: true,
         maintainAspectRatio: false,
 
@@ -206,15 +250,18 @@ async function load() {
 
         scales: {
           r: {
+
             suggestedMin: 1,
             suggestedMax: 5,
 
             angleLines: {
-              color: 'rgba(148,163,184,0.45)'
+              color:
+                'rgba(148,163,184,0.45)'
             },
 
             grid: {
-              color: 'rgba(148,163,184,0.35)'
+              color:
+                'rgba(148,163,184,0.35)'
             },
 
             pointLabels: {
@@ -231,35 +278,59 @@ async function load() {
     });
 
     const list = (sum.actions || [])
+
       .map(a => {
 
-        const pri = (a.priority || '').toLowerCase();
+        const pri =
+          (a.priority || '')
+          .toLowerCase();
 
-        let badgeLabel = a.priority || 'Ação';
+        let badgeLabel =
+          a.priority || 'Ação';
 
         let badgeClass = 'badge';
 
-        if (pri === 'alta') badgeClass += ' alta';
+        if (pri === 'alta')
+          badgeClass += ' alta';
 
-        if (pri === 'média' || pri === 'media') badgeClass += ' media';
+        if (
+          pri === 'média' ||
+          pri === 'media'
+        )
+          badgeClass += ' media';
 
-        if (pri === 'manter') badgeClass += ' manter';
+        if (pri === 'manter')
+          badgeClass += ' manter';
 
         return `
           <div class="card action-card">
+
             <div class="action-card-header">
-              <div class="action-dimension">${a.dimension}</div>
-              <span class="${badgeClass}">${badgeLabel}</span>
+
+              <div class="action-dimension">
+                ${a.dimension}
+              </div>
+
+              <span class="${badgeClass}">
+                ${badgeLabel}
+              </span>
+
             </div>
-            <p class="small" style="margin:0;">${a.suggestion}</p>
+
+            <p class="small" style="margin:0;">
+              ${a.suggestion}
+            </p>
+
           </div>
         `;
 
       })
+
       .join('');
 
     actionsContainer.innerHTML =
-      list || '<p class="small">Sem dados ainda.</p>';
+      list ||
+      '<p class="small">Sem dados ainda.</p>';
 
   } catch (error) {
 
