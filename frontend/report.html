@@ -8,17 +8,29 @@
   <link rel="stylesheet" href="assets/branding.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
 <aside class="sidebar" id="sidebar">
+
   <div class="side-logo">
-    <img src="assets/logo.svg" alt="Logo">
+    <img
+      src="assets/datainsight.jpg"
+      alt="Datainsight SST"
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        object-fit:cover;
+        box-shadow:0 4px 14px rgba(0,0,0,.18);
+      "
+    >
 
     <div>
       <strong>AVALIA NR01</strong>
-      <span>Plataforma Psicossocial</span>
+      <span>Powered by Datainsight</span>
     </div>
   </div>
 
@@ -26,13 +38,14 @@
   <a class="side-link" href="campaigns.html">Campanhas</a>
   <a class="side-link active" href="report.html">Relatórios</a>
   <a class="side-link" href="plans.html">Planos</a>
-  <a class="side-link" href="admin.html">Administração</a>
+  <a class="side-link admin-only" href="admin.html">Administração</a>
   <a class="side-link" href="support.html">Suporte</a>
   <a class="side-link" href="normas.html">Normas Técnicas</a>
 
   <button onclick="logout()" class="btn danger side-logout">
     Sair
   </button>
+
 </aside>
 
 <main class="app-main">
@@ -70,15 +83,26 @@
     <div id="actions"></div>
   </div>
 
-  <div class="footer">© 2025 AVALIA NR01 — Relatórios</div>
+  <div class="footer">
+    © 2025 AVALIA NR01 — Relatórios
+  </div>
 
 </main>
 
 <script>
+const API_URL = "https://psywork-nr01-api.onrender.com";
+
 let token = localStorage.getItem('token');
+const userRole = localStorage.getItem('role');
 
 if (!token) {
   location.href = 'index.html';
+}
+
+if (userRole !== 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'none';
+  });
 }
 
 let BAR;
@@ -93,99 +117,171 @@ function logout() {
 }
 
 async function init() {
-  const camps = await fetch('/api/campaigns', {
-    headers: { Authorization: 'Bearer ' + token }
-  }).then(r => r.json());
+  try {
+    const res = await fetch(API_URL + '/api/campaigns', {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
 
-  if (!camps.length) {
-    campSel.innerHTML = '<option>Nenhuma campanha encontrada</option>';
-    actions.innerHTML = '<p class="small">Crie uma campanha para gerar relatórios.</p>';
-    return;
+    if (!res.ok) {
+      alert('Erro ao carregar campanhas. Faça login novamente.');
+      return;
+    }
+
+    const camps = await res.json();
+
+    if (!camps.length) {
+      campSel.innerHTML = '<option>Nenhuma campanha encontrada</option>';
+      actions.innerHTML = '<p class="small">Crie uma campanha para gerar relatórios.</p>';
+      return;
+    }
+
+    campSel.innerHTML = camps
+      .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
+      .join('');
+
+    const lastCampaignId = localStorage.getItem('lastCampaignId');
+
+    if (lastCampaignId) {
+      campSel.value = lastCampaignId;
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão com a API.');
   }
-
-  campSel.innerHTML = camps
-    .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
-    .join('');
 }
 
 async function load() {
   const id = campSel.value;
 
-  if (!id) {
+  if (!id || id === 'Nenhuma campanha encontrada') {
     alert('Selecione uma campanha.');
     return;
   }
 
-  const res = await fetch('/api/summary/' + id, {
-    headers: { Authorization: 'Bearer ' + token }
-  }).then(r => r.json());
+  try {
+    const res = await fetch(API_URL + '/api/summary/' + id, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
 
-  const labels = Object.keys(res.average || {});
-  const data   = Object.values(res.average || {});
+    if (!res.ok) {
+      alert('Erro ao gerar relatório. Faça login novamente.');
+      return;
+    }
 
-  if (BAR) BAR.destroy();
+    const dataJson = await res.json();
 
-  if (!labels.length) {
-    actions.innerHTML = '<p class="small">Ainda não há respostas para esta campanha.</p>';
-    return;
-  }
+    const labels = Object.keys(dataJson.average || {});
+    const data   = Object.values(dataJson.average || {});
 
-  BAR = new Chart(document.getElementById('bar'), {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Média (1-5)',
-        data: data
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          suggestedMin: 1,
-          suggestedMax: 5
+    if (BAR) BAR.destroy();
+
+    if (!labels.length) {
+      actions.innerHTML = '<p class="small">Ainda não há respostas para esta campanha.</p>';
+      return;
+    }
+
+    BAR = new Chart(document.getElementById('bar'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Média (1-5)',
+          data: data
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            suggestedMin: 1,
+            suggestedMax: 5
+          }
         }
       }
-    }
-  });
+    });
 
-  actions.innerHTML = (res.actions || [])
-    .map(a =>
-      '<div class="card action-card">' +
-        '<div class="action-card-header">' +
-          '<div class="action-dimension">' + a.dimension + '</div>' +
-          '<span class="badge">' + a.priority + '</span>' +
-        '</div>' +
-        '<p class="small" style="margin:0;">' + a.suggestion + '</p>' +
-      '</div>'
-    )
-    .join('');
+    actions.innerHTML = (dataJson.actions || [])
+      .map(a => {
+        const priority = (a.priority || '').toLowerCase();
 
-  localStorage.setItem('lastCampaignId', id);
+        let badgeClass = 'badge';
+
+        if (priority === 'alta') {
+          badgeClass += ' alta';
+        }
+
+        if (priority === 'média' || priority === 'media') {
+          badgeClass += ' media';
+        }
+
+        if (priority === 'manter') {
+          badgeClass += ' manter';
+        }
+
+        return (
+          '<div class="card action-card">' +
+            '<div class="action-card-header">' +
+              '<div class="action-dimension">' + a.dimension + '</div>' +
+              '<span class="' + badgeClass + '">' + a.priority + '</span>' +
+            '</div>' +
+            '<p class="small" style="margin:0;">' + a.suggestion + '</p>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    localStorage.setItem('lastCampaignId', id);
+
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão com a API.');
+  }
 }
 
 async function downloadCSV() {
   const id = campSel.value;
 
-  if (!id) {
+  if (!id || id === 'Nenhuma campanha encontrada') {
     alert('Selecione uma campanha.');
     return;
   }
 
-  const data = await fetch('/api/export/' + id, {
-    headers: { Authorization: 'Bearer ' + token }
-  }).then(r => r.json());
+  try {
+    const res = await fetch(API_URL + '/api/export/' + id, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    });
 
-  const blob = new Blob([data.csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
+    if (!res.ok) {
+      alert('Erro ao exportar CSV.');
+      return;
+    }
 
-  a.href = url;
-  a.download = 'respostas_campanha_' + id + '.csv';
-  a.click();
+    const data = await res.json();
 
-  URL.revokeObjectURL(url);
+    const blob = new Blob([data.csv], {
+      type: 'text/csv'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = 'respostas_campanha_' + id + '.csv';
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão ao exportar CSV.');
+  }
 }
 
 const btnExportPdf = document.getElementById('btnExportPdf');
