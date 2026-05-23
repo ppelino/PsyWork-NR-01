@@ -1014,23 +1014,24 @@ textarea:focus {
   }
 }
 /* ==========================
-   ESPAÇAMENTO BOTÕES MOBILE/TABLET
+   BOTÕES TABELA MOBILE/TABLET
    ========================== */
 
 @media (max-width: 1100px) {
 
   td:last-child,
   .table td:last-child {
-    min-width: 260px !important;
+    min-width: 320px !important;
+    white-space: nowrap;
   }
 
   td:last-child .btn,
   .table td:last-child .btn {
     display: inline-flex !important;
-    margin-right: 18px !important;
-    margin-top: 6px;
-    min-width: 95px;
+    width: 110px !important;
     justify-content: center;
+    margin-right: 24px !important;
+    vertical-align: middle;
   }
 
   td:last-child .btn:last-child,
