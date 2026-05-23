@@ -1013,24 +1013,28 @@ textarea:focus {
     min-width: 880px;
   }
 }
-/* Ajuste fino dos botões Salvar / Excluir nas tabelas */
+/* ==========================
+   ESPAÇAMENTO BOTÕES MOBILE/TABLET
+   ========================== */
+
 @media (max-width: 1100px) {
-  table td:last-child,
-  .table td:last-child,
-  .card table td:last-child {
-    min-width: 210px !important;
+
+  td:last-child,
+  .table td:last-child {
+    min-width: 260px !important;
   }
 
-  table td:last-child .btn,
-  .table td:last-child .btn,
-  .card table td:last-child .btn {
-    margin-right: 10px;
-    margin-bottom: 6px;
+  td:last-child .btn,
+  .table td:last-child .btn {
+    display: inline-flex !important;
+    margin-right: 18px !important;
+    margin-top: 6px;
+    min-width: 95px;
+    justify-content: center;
   }
 
-  table td:last-child .btn:last-child,
-  .table td:last-child .btn:last-child,
-  .card table td:last-child .btn:last-child {
-    margin-right: 0;
+  td:last-child .btn:last-child,
+  .table td:last-child .btn:last-child {
+    margin-right: 0 !important;
   }
 }
