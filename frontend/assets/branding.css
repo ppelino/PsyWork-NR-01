@@ -1013,4 +1013,24 @@ textarea:focus {
     min-width: 880px;
   }
 }
+/* Ajuste fino dos botões Salvar / Excluir nas tabelas */
+@media (max-width: 1100px) {
+  table td:last-child,
+  .table td:last-child,
+  .card table td:last-child {
+    min-width: 210px !important;
+  }
 
+  table td:last-child .btn,
+  .table td:last-child .btn,
+  .card table td:last-child .btn {
+    margin-right: 10px;
+    margin-bottom: 6px;
+  }
+
+  table td:last-child .btn:last-child,
+  .table td:last-child .btn:last-child,
+  .card table td:last-child .btn:last-child {
+    margin-right: 0;
+  }
+}
