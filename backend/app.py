@@ -127,6 +127,29 @@ class Response(Base):
 
 
 Base.metadata.create_all(engine)
+def seed_questions_if_empty():
+    db = SessionLocal()
+    try:
+        total = db.query(Question).count()
+
+        if total == 0:
+            questions_path = os.path.join(BASE_DIR, "questions.json")
+
+            if os.path.exists(questions_path):
+                dataset = json.loads(
+                    open(questions_path, "r", encoding="utf-8").read()
+                )
+
+                for q in dataset:
+                    db.add(Question(dimension=q[0], text=q[1]))
+
+                db.commit()
+
+    finally:
+        db.close()
+
+
+seed_questions_if_empty()
 
 
 # ==========================
