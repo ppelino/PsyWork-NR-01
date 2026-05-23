@@ -813,3 +813,50 @@ textarea:focus {
     overflow-x: hidden;
   }
 }
+/* AJUSTE FINAL TABELAS ADMIN MOBILE */
+@media (max-width: 760px) {
+  .card {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .card table,
+  .table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card table th,
+  .card table td,
+  .table th,
+  .table td {
+    min-width: 130px;
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+
+  .card table input,
+  .card table select,
+  .table input,
+  .table select {
+    min-width: 140px;
+    max-width: 165px;
+  }
+
+  .card table .btn,
+  .table .btn {
+    width: auto;
+    min-width: 82px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .app-main {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
