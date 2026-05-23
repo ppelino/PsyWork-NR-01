@@ -599,28 +599,17 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
     rows = []
 
     for it in items:
-        ans = json.loads(it.answers or "{}")
+        ans = json.loads(it.answers)
         n += 1
 
         for qid, score in ans.items():
-            try:
-                qid_int = int(qid)
-            except (TypeError, ValueError):
-                qid_int = None
+            question = qs.get(int(qid))
 
-            question = qs.get(qid_int) if qid_int is not None else None
-
-            if question:
-                dim = question[0]
-            else:
-                dim = f"Questão {qid}"
-
-            try:
-                score_float = float(score)
-            except (TypeError, ValueError):
+            if not question:
                 continue
 
-            dim_scores.setdefault(dim, []).append(score_float)
+            dim = question[0]
+            dim_scores.setdefault(dim, []).append(float(score))
 
         rows.append({
             "created_at": it.created_at.isoformat(),
