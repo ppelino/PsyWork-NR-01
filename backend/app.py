@@ -599,18 +599,28 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
     rows = []
 
     for it in items:
-        ans = json.loads(it.answers)
+        ans = json.loads(it.answers or "{}")
         n += 1
 
-      for qid, score in ans.items():
-    question = qs.get(int(qid))
+        for qid, score in ans.items():
+            try:
+                qid_int = int(qid)
+            except (TypeError, ValueError):
+                qid_int = None
 
-    if question:
-        dim = question[0]
-    else:
-        dim = f"Questão {qid}"
+            question = qs.get(qid_int) if qid_int is not None else None
 
-    dim_scores.setdefault(dim, []).append(float(score)) 
+            if question:
+                dim = question[0]
+            else:
+                dim = f"Questão {qid}"
+
+            try:
+                score_float = float(score)
+            except (TypeError, ValueError):
+                continue
+
+            dim_scores.setdefault(dim, []).append(score_float)
 
         rows.append({
             "created_at": it.created_at.isoformat(),
@@ -662,7 +672,6 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
             "token": camp.token
         }
     }
-
 
 # ==========================
 # Export CSV
