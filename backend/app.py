@@ -602,9 +602,15 @@ def summary(campaign_id: int, user=Depends(auth_user), db: Session = Depends(get
         ans = json.loads(it.answers)
         n += 1
 
-        for qid, score in ans.items():
-            dim = qs[int(qid)][0]
-            dim_scores.setdefault(dim, []).append(float(score))
+      for qid, score in ans.items():
+    question = qs.get(int(qid))
+
+    if question:
+        dim = question[0]
+    else:
+        dim = f"Questão {qid}"
+
+    dim_scores.setdefault(dim, []).append(float(score)) 
 
         rows.append({
             "created_at": it.created_at.isoformat(),
