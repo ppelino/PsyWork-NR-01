@@ -773,90 +773,103 @@ textarea:focus {
   }
 }
 /* ==========================
-   AJUSTE MOBILE - TABELAS ADMIN
+   CORREÇÃO DEFINITIVA MOBILE/TABLET - ADMIN/TABELAS
    ========================== */
 
-@media (max-width: 760px) {
-
-  .card table {
-    display: block;
+@media (max-width: 1100px) {
+  html,
+  body {
     width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-main {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .table-responsive,
+  .card:has(table) {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
   }
 
-  .card table th,
-  .card table td {
-    min-width: 140px;
-    font-size: 13px;
-    padding: 10px 8px;
+  table,
+  .table,
+  .card table {
+    display: table;
+    width: max-content;
+    min-width: 760px;
+    border-collapse: collapse;
   }
 
-  .card table input,
-  .card table select {
+  table th,
+  table td,
+  .table th,
+  .table td {
+    white-space: nowrap;
+    min-width: 130px;
+    padding: 10px 12px;
+  }
+
+  table input,
+  table select {
     min-width: 150px;
     max-width: 180px;
   }
 
-  .card table .btn {
+  table .btn {
     width: auto;
-    min-width: 90px;
-    padding: 9px 12px;
-  }
-
-  .app-main {
-    overflow-x: hidden;
-  }
-
-  .card {
-    overflow-x: hidden;
-  }
-}
-/* AJUSTE FINAL TABELAS ADMIN MOBILE */
-@media (max-width: 760px) {
-  .card {
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  .card table,
-  .table {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .card table th,
-  .card table td,
-  .table th,
-  .table td {
-    min-width: 130px;
-    font-size: 13px;
-    padding: 10px 8px;
-  }
-
-  .card table input,
-  .card table select,
-  .table input,
-  .table select {
-    min-width: 140px;
-    max-width: 165px;
-  }
-
-  .card table .btn,
-  .table .btn {
-    width: auto;
-    min-width: 82px;
-    padding: 8px 10px;
+    min-width: 80px;
+    padding: 8px 12px;
     font-size: 12px;
   }
+}
 
+@media (max-width: 760px) {
   .app-main {
+    margin-left: 0;
     width: 100%;
+    padding: 72px 12px 24px;
     overflow-x: hidden;
+  }
+
+  .card {
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .card h2 {
+    font-size: 22px;
+  }
+
+  .menu-toggle {
+    top: 92px;
+    left: 28px;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+
+  .card:has(table) {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+
+  table,
+  .table,
+  .card table {
+    min-width: 820px;
   }
 }
