@@ -773,10 +773,24 @@ textarea:focus {
   }
 }
 /* ==========================
-   CORREÇÃO DEFINITIVA MOBILE/TABLET - ADMIN/TABELAS
+   CORREÇÃO FINAL RESPONSIVA - ADMIN/TABELAS
+   Foco: tablet/celular sem cortar ações
    ========================== */
 
-@media (max-width: 1100px) {
+/* Garante que grids/cards possam encolher sem estourar */
+.app-main,
+.container,
+.card,
+.module-grid,
+.module-card,
+.grid,
+.dashboard-left,
+.dashboard-right {
+  min-width: 0;
+}
+
+/* Tablet: mantém a sidebar e corrige a área útil */
+@media (max-width: 1100px) and (min-width: 761px) {
   html,
   body {
     width: 100%;
@@ -784,68 +798,122 @@ textarea:focus {
     overflow-x: hidden;
   }
 
+  .sidebar {
+    width: 230px;
+    max-width: 230px;
+  }
+
   .app-main {
-    width: 100%;
-    max-width: 100%;
+    margin-left: 230px;
+    width: calc(100% - 230px);
+    max-width: calc(100% - 230px);
+    padding: 22px;
     overflow-x: hidden;
   }
 
   .card {
-    width: 100%;
     max-width: 100%;
-    overflow: visible;
   }
 
-  .table-responsive,
-  .card:has(table) {
-    width: 100%;
+  /* O card vira a área de rolagem horizontal da tabela */
+  .card:has(table),
+  .table-responsive {
     max-width: 100%;
     overflow-x: auto !important;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
   }
 
-  table,
-  .table,
-  .card table {
-    display: table;
-    width: max-content;
-    min-width: 760px;
+  .card:has(table) table,
+  .table {
+    width: 100%;
+    min-width: 980px;
     border-collapse: collapse;
   }
 
-  table th,
-  table td,
+  .card:has(table) th,
+  .card:has(table) td,
   .table th,
   .table td {
     white-space: nowrap;
-    min-width: 130px;
     padding: 10px 12px;
   }
 
-  table input,
-  table select {
+  .card:has(table) input,
+  .card:has(table) select,
+  .table input,
+  .table select {
     min-width: 150px;
-    max-width: 180px;
+    max-width: 220px;
   }
 
-  table .btn {
-    width: auto;
-    min-width: 80px;
+  .card:has(table) .btn,
+  .table .btn {
+    width: auto !important;
+    min-width: 82px;
     padding: 8px 12px;
     font-size: 12px;
+    margin-bottom: 0;
   }
 }
 
+/* Celular e tablet pequeno: sidebar vira menu lateral */
 @media (max-width: 760px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .menu-toggle {
+    display: flex;
+    top: 92px;
+    left: 28px;
+    width: 58px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+  }
+
+  .sidebar {
+    width: 260px;
+    max-width: 260px;
+    transform: translateX(-105%);
+    transition: transform .25s ease;
+    z-index: 2500;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
   .app-main {
     margin-left: 0;
     width: 100%;
+    max-width: 100%;
     padding: 72px 12px 24px;
     overflow-x: hidden;
   }
 
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topbar h1 {
+    font-size: 24px;
+  }
+
+  .module-grid,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
   .card {
+    max-width: 100%;
     padding: 16px !important;
     border-radius: 18px !important;
   }
@@ -854,22 +922,95 @@ textarea:focus {
     font-size: 22px;
   }
 
-  .menu-toggle {
-    top: 92px;
-    left: 28px;
-    width: 58px;
-    height: 58px;
-    border-radius: 18px;
+  .toolbar {
+    flex-direction: column;
   }
 
-  .card:has(table) {
-    padding-right: 10px !important;
-    padding-left: 10px !important;
+  .btn {
+    width: 100%;
+    margin-bottom: 6px;
   }
 
-  table,
-  .table,
-  .card table {
-    min-width: 820px;
+  /* Rolagem horizontal interna somente nas tabelas */
+  .card:has(table),
+  .table-responsive {
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 10px 18px !important;
+  }
+
+  .card:has(table) table,
+  .table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+  }
+
+  .card:has(table) th,
+  .card:has(table) td,
+  .table th,
+  .table td {
+    white-space: nowrap;
+    min-width: 120px;
+    padding: 10px 10px;
+    font-size: 13px;
+  }
+
+  .card:has(table) input,
+  .card:has(table) select,
+  .table input,
+  .table select {
+    min-width: 145px;
+    max-width: 190px;
+  }
+
+  .card:has(table) .btn,
+  .table .btn {
+    width: auto !important;
+    min-width: 82px;
+    padding: 8px 12px;
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+
+  .chart-wrap {
+    height: 300px;
+    max-height: 300px;
   }
 }
+
+/* Celular estreito */
+@media (max-width: 420px) {
+  .app-main {
+    padding: 70px 10px 20px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+  }
+
+  .card h2 {
+    font-size: 20px;
+  }
+
+  .card h3 {
+    font-size: 16px;
+  }
+
+  .side-link {
+    font-size: 14px;
+  }
+
+  .chart-wrap {
+    height: 270px;
+    max-height: 270px;
+  }
+
+  .card:has(table) table,
+  .table {
+    min-width: 880px;
+  }
+}
+
