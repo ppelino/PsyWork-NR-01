@@ -49,6 +49,17 @@
 </aside>
 
 <main class="app-main">
+<div class="report-header">
+  <div>
+    <h1>RELATÓRIO EXECUTIVO NR01</h1>
+    <p>Indicadores psicossociais e plano de ação preventivo</p>
+  </div>
+
+  <div class="report-company">
+    <strong>Datainsight Consulting</strong>
+    <span>Relatório Confidencial</span>
+  </div>
+</div>  
 
   <div class="topbar">
     <div>
@@ -78,10 +89,21 @@
     <canvas id="bar"></canvas>
   </div>
 
-  <div class="card">
-    <h3>Plano de Ação</h3>
-    <div id="actions"></div>
+ <div class="card">
+  <div class="section-title">
+    <h3>Plano de Ação Executivo</h3>
+    <span class="badge">ANÁLISE AUTOMÁTICA</span>
   </div>
+
+  <div class="executive-summary">
+    <h4>Resumo Executivo</h4>
+    <p id="summaryText">
+      Resultado automático da avaliação psicossocial da campanha selecionada.
+    </p>
+  </div>
+
+  <div id="actions" class="actions-grid"></div>
+</div>
 
   <div class="footer">
     © 2025 AVALIA NR01 — Relatórios
@@ -205,36 +227,45 @@ async function load() {
       }
     });
 
-    actions.innerHTML = (dataJson.actions || [])
-      .map(a => {
-        const priority = (a.priority || '').toLowerCase();
+   actions.innerHTML = (dataJson.actions || [])
+  .slice(0, 5)
+  .map(a => {
 
-        let badgeClass = 'badge';
+    const priority = (a.priority || '').toLowerCase();
 
-        if (priority === 'alta') {
-          badgeClass += ' alta';
-        }
+    let badgeClass = 'badge';
 
-        if (priority === 'média' || priority === 'media') {
-          badgeClass += ' media';
-        }
+    if (priority === 'alta') {
+      badgeClass += ' alta';
+    }
 
-        if (priority === 'manter') {
-          badgeClass += ' manter';
-        }
+    if (priority === 'média' || priority === 'media') {
+      badgeClass += ' media';
+    }
 
-        return (
-          '<div class="card action-card">' +
-            '<div class="action-card-header">' +
-              '<div class="action-dimension">' + a.dimension + '</div>' +
-              '<span class="' + badgeClass + '">' + a.priority + '</span>' +
-            '</div>' +
-            '<p class="small" style="margin:0;">' + a.suggestion + '</p>' +
-          '</div>'
-        );
-      })
-      .join('');
+    if (priority === 'manter') {
+      badgeClass += ' manter';
+    }
 
+    return `
+      <div class="executive-card">
+        <div class="executive-top">
+          <div class="executive-dimension">
+            ${a.dimension}
+          </div>
+
+          <span class="${badgeClass}">
+            ${a.priority}
+          </span>
+        </div>
+
+        <div class="executive-text">
+          ${a.suggestion}
+        </div>
+      </div>
+    `;
+  })
+  .join('');
     localStorage.setItem('lastCampaignId', id);
 
   } catch (err) {
