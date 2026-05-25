@@ -1053,12 +1053,12 @@ textarea:focus {
   }
 
   .card table,
-  .table {
-    display: table !important;
-    width: max-content !important;
-    min-width: 1150px !important;
-    border-collapse: collapse;
-  }
+.table {
+  display: table !important;
+  width: 100% !important;
+  min-width: 980px !important;
+  border-collapse: collapse;
+}
 
   .card table th,
   .card table td,
@@ -1102,7 +1102,7 @@ textarea:focus {
 @media (max-width: 760px) {
   .card table,
   .table {
-    min-width: 1250px !important;
+    min-width: 1050px !important;
   }
 
   .menu-toggle {
