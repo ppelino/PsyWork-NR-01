@@ -54,13 +54,17 @@
     <h1>RELATÓRIO EXECUTIVO NR01</h1>
     <p>Indicadores psicossociais e plano de ação preventivo</p>
   </div>
+  
+<div class="report-company">
+  <strong>Datainsight Consulting</strong>
+  <span>Relatório Confidencial</span>
 
-  <div class="report-company">
-    <strong>Datainsight Consulting</strong>
-    <span>Relatório Confidencial</span>
+  <div class="report-meta">
+    <p><strong>Empresa Avaliada:</strong> ____________________</p>
+    <p><strong>Responsável Técnico:</strong> ____________________</p>
+    <p><strong>Data da Avaliação:</strong> <span id="reportDate"></span></p>
   </div>
-</div>  
-
+</div>
   <div class="topbar">
     <div>
       <h1>Relatórios</h1>
@@ -324,6 +328,9 @@ if (btnExportPdf) {
     window.print();
   });
 }
+
+document.getElementById('reportDate').innerText =
+  new Date().toLocaleDateString('pt-BR');
 
 init();
 </script>
