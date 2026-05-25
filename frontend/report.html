@@ -49,25 +49,36 @@
 </aside>
 
 <main class="app-main">
-<div class="report-header">
-  <div>
-    <h1>RELATÓRIO EXECUTIVO NR01</h1>
-    <p>Indicadores psicossociais e plano de ação preventivo</p>
-  </div>
-  
-<div class="report-company">
-  <strong>Datainsight Consulting</strong>
-  <span>Relatório Confidencial</span>
 
-  <div class="report-meta">
-   <p>
-  <strong>Empresa Avaliada:</strong><br>
-  <span id="empresaNome"></span>
-</p>
-    <p><strong>Responsável Técnico:</strong> ____________________</p>
-    <p><strong>Data da Avaliação:</strong> <span id="reportDate"></span></p>
+  <div class="report-header">
+    <div>
+      <h1>RELATÓRIO EXECUTIVO NR01</h1>
+      <p>Indicadores psicossociais e plano de ação preventivo</p>
+    </div>
+
+    <div class="report-company">
+      <strong>Datainsight Consulting</strong>
+      <span>Relatório Confidencial</span>
+
+      <div class="report-meta">
+        <p>
+          <strong>Empresa Avaliada:</strong><br>
+          <span id="empresaNome">---</span>
+        </p>
+
+        <p>
+          <strong>Responsável Técnico:</strong><br>
+          ____________________
+        </p>
+
+        <p>
+          <strong>Data da Avaliação:</strong><br>
+          <span id="reportDate"></span>
+        </p>
+      </div>
+    </div>
   </div>
-</div>
+
   <div class="topbar">
     <div>
       <h1>Relatórios</h1>
@@ -90,29 +101,30 @@
       <button class="btn secondary" id="btnExportPdf">Exportar PDF</button>
     </div>
   </div>
-<div class="card">
-  <h3>Gráfico por dimensão</h3>
 
-  <div class="chart-box">
-    <canvas id="bar"></canvas>
-  </div>
-</div>
+  <div class="card dashboard-card">
+    <h3>Gráfico por dimensão</h3>
 
- <div class="card">
-  <div class="section-title">
-    <h3>Plano de Ação Executivo</h3>
-    <span class="badge">ANÁLISE AUTOMÁTICA</span>
+    <div class="chart-wrap">
+      <canvas id="bar"></canvas>
+    </div>
   </div>
 
-  <div class="executive-summary">
-    <h4>Resumo Executivo</h4>
-    <p id="summaryText">
-      Resultado automático da avaliação psicossocial da campanha selecionada.
-    </p>
-  </div>
+  <div class="card">
+    <div class="section-title">
+      <h3>Plano de Ação Executivo</h3>
+      <span class="badge">ANÁLISE AUTOMÁTICA</span>
+    </div>
 
-  <div id="actions" class="actions-grid"></div>
-</div>
+    <div class="executive-summary">
+      <h4>Resumo Executivo</h4>
+      <p id="summaryText">
+        Resultado automático da avaliação psicossocial da campanha selecionada.
+      </p>
+    </div>
+
+    <div id="actions" class="actions-grid"></div>
+  </div>
 
   <div class="footer">
     © 2025 AVALIA NR01 — Relatórios
@@ -137,6 +149,7 @@ if (userRole !== 'admin') {
 }
 
 let BAR;
+let campaignsList = [];
 
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
@@ -145,6 +158,15 @@ function toggleSidebar() {
 function logout() {
   localStorage.clear();
   window.location.href = "index.html";
+}
+
+function atualizarEmpresaAvaliada() {
+  const selectedCamp = campaignsList.find(
+    c => String(c.id) === String(campSel.value)
+  );
+
+  document.getElementById('empresaNome').textContent =
+    selectedCamp ? selectedCamp.title : '---';
 }
 
 async function init() {
@@ -161,29 +183,30 @@ async function init() {
     }
 
     const camps = await res.json();
+    campaignsList = camps;
 
     if (!camps.length) {
       campSel.innerHTML = '<option>Nenhuma campanha encontrada</option>';
       actions.innerHTML = '<p class="small">Crie uma campanha para gerar relatórios.</p>';
+      document.getElementById('empresaNome').textContent = '---';
       return;
     }
 
-   campSel.innerHTML = camps
-  .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
-  .join('');
-
-const selectedCamp = camps[0];
-
-document.getElementById('empresaNome').textContent =
-  selectedCamp.title;
-
-const lastCampaignId = localStorage.getItem('lastCampaignId');
+    campSel.innerHTML = camps
+      .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
+      .join('');
 
     const lastCampaignId = localStorage.getItem('lastCampaignId');
 
     if (lastCampaignId) {
       campSel.value = lastCampaignId;
     }
+
+    atualizarEmpresaAvaliada();
+
+    campSel.addEventListener('change', () => {
+      atualizarEmpresaAvaliada();
+    });
 
   } catch (err) {
     console.error(err);
@@ -198,6 +221,8 @@ async function load() {
     alert('Selecione uma campanha.');
     return;
   }
+
+  atualizarEmpresaAvaliada();
 
   try {
     const res = await fetch(API_URL + '/api/summary/' + id, {
@@ -214,7 +239,7 @@ async function load() {
     const dataJson = await res.json();
 
     const labels = Object.keys(dataJson.average || {});
-    const data   = Object.values(dataJson.average || {});
+    const data = Object.values(dataJson.average || {});
 
     if (BAR) BAR.destroy();
 
@@ -229,11 +254,18 @@ async function load() {
         labels: labels,
         datasets: [{
           label: 'Média (1-5)',
-          data: data
+          data: data,
+          backgroundColor: 'rgba(91, 61, 245, 0.35)',
+          borderColor: 'rgba(91, 61, 245, 1)',
+          borderWidth: 1,
+          borderRadius: 8,
+          barPercentage: 0.45,
+          categoryPercentage: 0.55
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
             suggestedMin: 1,
@@ -243,45 +275,59 @@ async function load() {
       }
     });
 
-   actions.innerHTML = (dataJson.actions || [])
-  .slice(0, 5)
-  .map(a => {
+    actions.innerHTML = (dataJson.actions || [])
+      .slice(0, 5)
+      .map(a => {
+        const priority = (a.priority || '').toLowerCase();
 
-    const priority = (a.priority || '').toLowerCase();
+        let badgeClass = 'badge';
 
-    let badgeClass = 'badge';
+        if (priority === 'alta') {
+          badgeClass += ' alta';
+        }
 
-    if (priority === 'alta') {
-      badgeClass += ' alta';
-    }
+        if (priority === 'média' || priority === 'media') {
+          badgeClass += ' media';
+        }
 
-    if (priority === 'média' || priority === 'media') {
-      badgeClass += ' media';
-    }
+        if (priority === 'manter') {
+          badgeClass += ' manter';
+        }
 
-    if (priority === 'manter') {
-      badgeClass += ' manter';
-    }
+        return `
+          <div class="executive-card">
+            <div class="executive-top">
+              <div class="executive-dimension">
+                ${a.dimension}
+              </div>
 
-    return `
-      <div class="executive-card">
-        <div class="executive-top">
-          <div class="executive-dimension">
-            ${a.dimension}
+              <span class="${badgeClass}">
+                ${a.priority}
+              </span>
+            </div>
+
+            <div class="executive-text">
+              ${a.suggestion}
+            </div>
           </div>
+        `;
+      })
+      .join('');
 
-          <span class="${badgeClass}">
-            ${a.priority}
-          </span>
-        </div>
+    const critical = (dataJson.actions || []).find(
+      a => (a.priority || '').toLowerCase() === 'alta'
+    );
 
-        <div class="executive-text">
-          ${a.suggestion}
-        </div>
-      </div>
-    `;
-  })
-  .join('');
+    if (critical) {
+      summaryText.innerHTML =
+        `Foi identificado risco elevado em <strong>${critical.dimension}</strong>,
+        sendo recomendada atuação preventiva imediata e acompanhamento organizacional.`;
+    } else {
+      summaryText.innerHTML =
+        `Os indicadores apresentam estabilidade geral,
+        sendo recomendada manutenção das boas práticas e monitoramento periódico.`;
+    }
+
     localStorage.setItem('lastCampaignId', id);
 
   } catch (err) {
