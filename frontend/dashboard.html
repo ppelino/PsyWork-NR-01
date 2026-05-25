@@ -191,8 +191,13 @@ async function load() {
       return;
     }
 
-    const sum = await fetch(
-      API_URL + '/api/summary/' + camps[0].id,
+  const lastCampaignId = localStorage.getItem('lastCampaignId');
+
+const selectedCamp =
+  camps.find(c => String(c.id) === String(lastCampaignId)) || camps[0];
+
+const sum = await fetch(
+  API_URL + '/api/summary/' + selectedCamp.id,
       {
         headers: {
           Authorization: 'Bearer ' + token
