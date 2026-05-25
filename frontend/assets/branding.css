@@ -768,11 +768,10 @@ textarea:focus {
 }
 
   .login-card::before {
-    width: 340px;
-    height: 340px;
-    opacity: .04;
-  }
-
+  width: 280px;
+  height: 280px;
+  opacity: .03;
+}
   .login-logo {
     margin-inline: auto;
   }
