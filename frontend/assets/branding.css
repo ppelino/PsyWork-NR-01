@@ -1007,7 +1007,21 @@ textarea:focus {
   .card h3 {
     font-size: 16px;
   }
+.report-company{
+  text-align:right;
+}
 
+.report-meta {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+.report-meta p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #4b5563;
+}
   .side-link {
     font-size: 14px;
   }
