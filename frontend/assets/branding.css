@@ -698,8 +698,8 @@ textarea:focus {
 }
 
 .login-logo {
-  width: 110px;
-  height: 110px;
+  width: 96px;
+  height: 96px;
   border-radius: 28px;
   background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(238,242,255,.96));
   display: flex;
@@ -711,8 +711,8 @@ textarea:focus {
 }
 
 .login-logo img {
-  width: 92px;
-  height: 92px;
+  width: 82px;
+  height: 82px;
   object-fit: cover;
   border-radius: 22px;
 }
