@@ -62,7 +62,7 @@
   <div class="report-meta">
    <p>
   <strong>Empresa Avaliada:</strong><br>
-  <span id="empresaNome">Carregando...</span>
+  <span id="empresaNome"></span>
 </p>
     <p><strong>Responsável Técnico:</strong> ____________________</p>
     <p><strong>Data da Avaliação:</strong> <span id="reportDate"></span></p>
@@ -168,9 +168,16 @@ async function init() {
       return;
     }
 
-    campSel.innerHTML = camps
-      .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
-      .join('');
+   campSel.innerHTML = camps
+  .map(c => '<option value="' + c.id + '">' + c.title + '</option>')
+  .join('');
+
+const selectedCamp = camps[0];
+
+document.getElementById('empresaNome').textContent =
+  selectedCamp.title;
+
+const lastCampaignId = localStorage.getItem('lastCampaignId');
 
     const lastCampaignId = localStorage.getItem('lastCampaignId');
 
